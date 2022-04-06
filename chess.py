@@ -36,7 +36,7 @@ otherColor		= {"w": "b", "b": "w"}
 
 def checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,capturableEnPassant):
 	totalValuePieces 	= 0
-	lightSquaredBishops = 0
+	lightSquaredBishops 	= 0
 	darkSquaredBishops 	= 0
 	legalMovesV3 		= []
 	fiftyMovesDraw 		= False
@@ -868,8 +868,8 @@ def isUnderAttack(color,mySquareRank,mySquareLine):
 def startGame():
 	# Zughstorie / Bauern, die der Ziehende enPassant schlagen kann / vom Gegner kontrollierte Felder / Weiß beginnt
 	moveHistory 		= []
-	capturableEnPassant = []
-	color 				= "White"
+	capturableEnPassant 	= []
+	color 			= "White"
 
 	print("\nWelcome to my chess game!")
 
@@ -911,9 +911,9 @@ def startGame():
 				continue
 
 			# Definition Funktionsparameter
-			piece 				= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur, z.B. "wp" oder "bp"
-			sourceSquareRank 	= int(rankIndex[sourceSquare[1]])				# Zahl in Indexform [0-7]
-			sourceSquareLine 	= int(lineIndex[sourceSquare[0]])				# Buchstabe in Indexform [0-7]
+			piece 			= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur, z.B. "wp" oder "bp"
+			sourceSquareRank 	= int(rankIndex[sourceSquare[1]])		# Zahl in Indexform [0-7]
+			sourceSquareLine 	= int(lineIndex[sourceSquare[0]])		# Buchstabe in Indexform [0-7]
 
 			# Prüfe Züge ohne Beachtung von Schach / ggf. füge Rochadezüge hinzu ohne Beachtung von Schach / ggf. entferne Züge, bei denen der König danach im Schach stehen würde
 			legalMovesV1 		= []
