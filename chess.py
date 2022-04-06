@@ -49,9 +49,6 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,captu
 	# 	boardCompositions = []
 
 	if boardCompositions.count(boardComposition) == 3:
-		print("\nmove history:\n")
-		for move in moveHistory:
-			print(move)
 		sys.exit("Threefold repitition! This is a draw.")
 
 	# Alle 64 Felder durchgehen und (Figuren)werte zählen für Remisprüfung durch zu wenig Material
@@ -91,31 +88,19 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,captu
 
 	# Nur Leichtfigur ODER nur weißfeldrige Läufer ODER nur schwarzfeldrige Läufer auf dem Brett (neben den Königen) => Unentschieden.
 	if (totalValuePieces <= 3) or (lightSquaredBishops * 3 == totalValuePieces) or (darkSquaredBishops * 3 == totalValuePieces):
-		print("\nmove history:\n")
-		for move in moveHistory:
-			print(move)
 		sys.exit("\nNot enough mating material! This is a draw.\n")
 
 	# Wenn keine legalen Züge...
 	if not legalMovesV2:
 		# ...aber König nicht im Schach => Patt
 		if not isMyKingInCheck:
-			print("\nmove history:\n")
-			for move in moveHistory:
-				print(move)
 			sys.exit("\nStalemate! This is a draw.\n")
 		# ...und König im Schach => Matt
 		if isMyKingInCheck:
 			color = "White" if color == "Black" else "Black"
-			print("\nmove history:\n")
-			for move in moveHistory:
-				print(move)
 			sys.exit("\nCheckmate! "+color+" wins.\n")
 
 	if fiftyMovesDraw:
-		print("\nmove history:\n")
-		for move in moveHistory:
-			print(move)
 		sys.exit("\n50 moves without moving a pawn, taking a piece or mating the king! This is a draw.\n")
 
 def checkIfKingInCheck(color):
