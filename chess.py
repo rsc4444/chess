@@ -5,34 +5,6 @@ import random
 import sys
 
 # ====================================================================================================
-# ToDo
-# ====================================================================================================
-
-# ERLEDIGT
-# Züge von allen Figuren
-# en passant
-# Bauernumwandlung
-# Rochade
-# Fesselung
-# Mattprüfung
-# Remisprüfung...
-	# durch Patt
-	# durch 50 Züge ohne Bauern- oder Schlagzug oder Matt (Umwandlung ist auch ein Bauernzug)
-	# durch 3-fache Stellungswiederholung
-	# durch nicht ausreichend Material. Also wenn neben den Königen nur...
-		# 1 Leichtfigur
-		# je 1 Läufer gleicher Feldfarbe
-
-# OFFEN
-# TESTEN
-# Schleifenwdh. in legaMovesV2 verhindern
-
-# OOP programmieren mit mehreren Klassen
-# statt Index +1 -1 Funktionen mit left right machen
-# Mini-Max-Algorithmus
-# GUI
-
-# ====================================================================================================
 # Variablen
 # ====================================================================================================
 
