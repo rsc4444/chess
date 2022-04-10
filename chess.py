@@ -36,7 +36,7 @@ otherColor		= {"w": "b", "b": "w"}
 
 def checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,capturableEnPassant):
 	totalValuePieces 	= 0
-	lightSquaredBishops 	= 0
+	lightSquaredBishops = 0
 	darkSquaredBishops 	= 0
 	legalMovesV3 		= []
 	fiftyMovesDraw 		= False
@@ -59,15 +59,15 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,captu
 			# p = pawn (Bauer), q = queen (Dame), r = rook (Turm), n = knight (Springer), b = bishop (Läufer)
 			if piece[1] == "p" or piece[1] == "q" or piece[1] == "r":
 				totalValuePieces += 9
-			if piece[1] == "n":
+			elif piece[1] == "n":
 				totalValuePieces += 3
-			if piece[1] == "b":
+			elif piece[1] == "b":
 				totalValuePieces += 3
 				# Zeilen- und Spaltenindex 2x gerade oder 2x ungerade => weißes Feld (es geht hier nur um die Feldfarbe, nicht um die Figurenfarbe!!!)
 				if (sourceSquareRank % 2) == (sourceSquareLine % 2):
 					lightSquaredBishops += 1
 				# Zeilen- und Spaltenindex 1x gerade und 1x ungerade => schwarzes Feld (es geht hier nur um die Feldfarbe, nicht um die Figurenfarbe!!!)
-				if (sourceSquareRank % 2) != (sourceSquareLine % 2):
+				elif (sourceSquareRank % 2) != (sourceSquareLine % 2):
 					darkSquaredBishops += 1
 
 			# Wenn piece = eigene Figur
@@ -103,7 +103,8 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,captu
 	if fiftyMovesDraw:
 		sys.exit("\n50 moves without moving a pawn, taking a piece or mating the king! This is a draw.\n")
 
-def checkIfKingInCheck(color):
+
+def checkIfKingInCheck(color) -> bool:
 	# Iteration über das Brett. Feld mit eigenem König wird gesucht
 	for sourceSquareRank in range(8):
 		for sourceSquareLine in range(8):
@@ -112,7 +113,8 @@ def checkIfKingInCheck(color):
 				# prüfe, ob Feld mit eigenem König im Schach (return True = im Schach / return False = nicht im Schach)
 				return isUnderAttack(color,sourceSquareRank,sourceSquareLine)
 
-def checkShortCastleRight(color,moveHistory):
+
+def checkShortCastleRight(color,moveHistory) -> bool:
 	# Prüfe Recht für kurze Rochade weiß
 	# Wenn König und Turm auf Ausgangsfeld stehen und Felder dazwischen frei => Rochade bis jetzt möglich
 	if color == "White":
@@ -140,7 +142,8 @@ def checkShortCastleRight(color,moveHistory):
 
 	return False
 
-def checkLongCastleRight(color,moveHistory):
+
+def checkLongCastleRight(color,moveHistory) -> bool:
 	# Prüfe Recht für lange Rochade weiß
 	if color == "White":
 		if board.loc["1","a"] == "wr":
@@ -167,7 +170,8 @@ def checkLongCastleRight(color,moveHistory):
 
 	return False
 
-def checkCastleMovesV1(color,isMyKingInCheck,piece,legalMovesV1,moveHistory):
+
+def checkCastleMovesV1(color,isMyKingInCheck,piece,legalMovesV1,moveHistory) -> tuple:
 	shortCastleRight 	= checkShortCastleRight(color,moveHistory)
 	longCastleRight 	= checkLongCastleRight(color,moveHistory)
 
@@ -199,26 +203,27 @@ def checkCastleMovesV1(color,isMyKingInCheck,piece,legalMovesV1,moveHistory):
 # Filtere legale Zugmöglichkeiten
 # ====================================================================================================
 
-def checkLegalMovesV1(color,piece,legalMovesV1,sourceSquareRank,sourceSquareLine,capturableEnPassant):
+def checkLegalMovesV1(color,piece,legalMovesV1,sourceSquareRank,sourceSquareLine,capturableEnPassant) -> list:
 
-	if color == "White" and piece == "wp":
+	if piece == "wp":
 		legalMovesV1  = checkLegalMovesWhitePawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capturableEnPassant)
 
-	if color == "Black" and piece == "bp":
+	if piece == "bp":
 		legalMovesV1  = checkLegalMovesBlackPawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capturableEnPassant)
 
-	if (color == "White" and piece in ["wr","wb","wq"]) or (color == "Black" and piece in ["br","bb","bq"]):
+	if piece in ["wr","wb","wq","br","bb","bq"]:
 		legalMovesV1  = checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceSquareRank,sourceSquareLine)
 
-	if (color == "White" and piece == "wn") or (color == "Black" and piece == "bn"):
+	if piece.endswith("n"):
 		legalMovesV1  = checkLegalMovesKnight(piece,legalMovesV1,sourceSquareRank,sourceSquareLine)
 
-	if (color == "White" and piece == "wk") or (color == "Black" and piece == "bk"):
+	if piece.endswith("k"):
 		legalMovesV1  = checkLegalMovesKing(piece,legalMovesV1,sourceSquareRank,sourceSquareLine)
 
 	return legalMovesV1
 
-def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceSquareRank,sourceSquareLine):
+
+def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceSquareRank,sourceSquareLine) -> list:
 	# call-by-value, daher copy
 	legalMovesV4 = copy.copy(legalMovesV1)
 
@@ -355,7 +360,8 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceSquareRank,sou
 
 	return legalMovesV3
 
-def checkLegalMovesWhitePawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capturableEnPassant):
+
+def checkLegalMovesWhitePawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capturableEnPassant) -> list:
 	# Wenn Bauer in 2. Reihe
 	if sourceSquareRank == 6:
 		# Wenn Feld davor frei => füge Zug hinzu
@@ -376,7 +382,7 @@ def checkLegalMovesWhitePawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capt
 				legalMovesV1.append([sourceSquareRank-1,sourceSquareLine+1])
 
 	# Wenn Bauer in 3./4./6. Reihe
-	if sourceSquareRank in [5,4,2]:
+	elif sourceSquareRank in [5,4,2]:
 		# Wenn Feld davor frei => füge Zug hinzu
 		if board.iloc[sourceSquareRank-1,sourceSquareLine] == "--":
 			legalMovesV1.append([sourceSquareRank-1,sourceSquareLine])
@@ -392,7 +398,7 @@ def checkLegalMovesWhitePawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capt
 				legalMovesV1.append([sourceSquareRank-1,sourceSquareLine+1])
 
 	# Wenn Bauer in 5. Reihe
-	if sourceSquareRank == 3:
+	elif sourceSquareRank == 3:
 		# Wenn Feld davor frei => füge Zug hinzu
 		if board.iloc[sourceSquareRank-1,sourceSquareLine] == "--":
 			legalMovesV1.append([sourceSquareRank-1,sourceSquareLine])
@@ -402,7 +408,7 @@ def checkLegalMovesWhitePawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capt
 			if board.iloc[sourceSquareRank-1,sourceSquareLine-1].startswith("b"):
 				legalMovesV1.append([sourceSquareRank-1,sourceSquareLine-1])
 			# Wenn links neben mir ein gegnerischer Bauer steht, der gerade einen Doppelschritt gegangen ist => füge Zug hinzu
-			if capturableEnPassant == [sourceSquareRank,sourceSquareLine-1]:
+			elif capturableEnPassant == [sourceSquareRank,sourceSquareLine-1]:
 				legalMovesV1.append([sourceSquareRank-1,sourceSquareLine-1])
 		# Wenn wir nicht rechte Spalte sind => prüfe Schlagzug nach rechts
 		if sourceSquareLine != 7:
@@ -410,11 +416,11 @@ def checkLegalMovesWhitePawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capt
 			if board.iloc[sourceSquareRank-1,sourceSquareLine+1].startswith("b"):
 				legalMovesV1.append([sourceSquareRank-1,sourceSquareLine+1])
 			# Wenn rechts neben mir ein gegnerischer Bauer steht, der gerade einen Doppelschritt gegangen ist => füge Zug hinzu
-			if capturableEnPassant == [sourceSquareRank,sourceSquareLine+1]:
+			elif capturableEnPassant == [sourceSquareRank,sourceSquareLine+1]:
 				legalMovesV1.append([sourceSquareRank-1,sourceSquareLine+1])
 
 	# Wenn Bauer in 7. Reihe
-	if sourceSquareRank == 1:
+	elif sourceSquareRank == 1:
 		# Wenn Feld davor frei => füge Zug hinzu
 		if board.iloc[sourceSquareRank-1,sourceSquareLine] == "--":
 			legalMovesV1.append([sourceSquareRank-1,sourceSquareLine])
@@ -431,7 +437,8 @@ def checkLegalMovesWhitePawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capt
 
 	return legalMovesV1
 
-def checkLegalMovesBlackPawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capturableEnPassant):
+
+def checkLegalMovesBlackPawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capturableEnPassant) -> list:
 	if sourceSquareRank == 1:
 		if board.iloc[sourceSquareRank+1,sourceSquareLine] == "--":
 			legalMovesV1.append([sourceSquareRank+1,sourceSquareLine])
@@ -444,7 +451,7 @@ def checkLegalMovesBlackPawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capt
 			if board.iloc[sourceSquareRank+1,sourceSquareLine-1].startswith("w"):
 				legalMovesV1.append([sourceSquareRank+1,sourceSquareLine-1])
 
-	if sourceSquareRank in [2,3,5]:
+	elif sourceSquareRank in [2,3,5]:
 		if board.iloc[sourceSquareRank+1,sourceSquareLine] == "--":
 			legalMovesV1.append([sourceSquareRank+1,sourceSquareLine])
 		if sourceSquareLine != 7:
@@ -454,21 +461,21 @@ def checkLegalMovesBlackPawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capt
 			if board.iloc[sourceSquareRank+1,sourceSquareLine-1].startswith("w"):
 				legalMovesV1.append([sourceSquareRank+1,sourceSquareLine-1])
 
-	if sourceSquareRank == 4:
+	elif sourceSquareRank == 4:
 		if board.iloc[sourceSquareRank+1,sourceSquareLine] == "--":
 			legalMovesV1.append([sourceSquareRank+1,sourceSquareLine])
 		if sourceSquareLine != 7:
 			if board.iloc[sourceSquareRank+1,sourceSquareLine+1].startswith("w"):
 				legalMovesV1.append([sourceSquareRank+1,sourceSquareLine+1])
-			if capturableEnPassant == [sourceSquareRank,sourceSquareLine+1]:
+			elif capturableEnPassant == [sourceSquareRank,sourceSquareLine+1]:
 				legalMovesV1.append([sourceSquareRank+1,sourceSquareLine+1])
 		if sourceSquareLine != 0:
 			if board.iloc[sourceSquareRank+1,sourceSquareLine-1].startswith("w"):
 				legalMovesV1.append([sourceSquareRank+1,sourceSquareLine-1])
-			if capturableEnPassant == [sourceSquareRank,sourceSquareLine-1]:
+			elif capturableEnPassant == [sourceSquareRank,sourceSquareLine-1]:
 				legalMovesV1.append([sourceSquareRank+1,sourceSquareLine-1])
 
-	if sourceSquareRank == 6:
+	elif sourceSquareRank == 6:
 		if board.iloc[sourceSquareRank+1,sourceSquareLine] == "--":
 			legalMovesV1.append([sourceSquareRank+1,sourceSquareLine])
 		if sourceSquareLine != 7:
@@ -480,7 +487,8 @@ def checkLegalMovesBlackPawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capt
 
 	return legalMovesV1
 
-def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceSquareRank,sourceSquareLine):
+
+def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceSquareRank,sourceSquareLine) -> list:
 	# Turm und Läufer haben max. 4, Dame max. 8 Richtungen. Alle können maximal 7 Schritte gehen
 	for direction in range(1,9):
 		for step in range(1,8):
@@ -490,71 +498,42 @@ def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceSquareRank,sourceSqu
 			stepRank = 10
 			stepLine = 10
 
-			# Turm
-			if piece.endswith("r"):
+			# Turm oder Dame
+			if piece.endswith("r") or piece.endswith("q"):
 				# Je nach Richtung werden die Indizes definiert
 				# 1 = vorne, 2 = hinten, 3 = rechts, 4 = links
 				if direction == 1:
 					stepRank = step * -1
 					stepLine = 0
-				if direction == 2:
+				elif direction == 2:
 					stepRank = step * +1
 					stepLine = 0
-				if direction == 3:
+				elif direction == 3:
 					stepRank = 0
 					stepLine = step * +1
-				if direction == 4:
+				elif direction == 4:
 					stepRank = 0
 					stepLine = step * -1
 
-			# Läufer
-			if piece.endswith("b"):
+			# Läufer oder Dame
+			if piece.endswith("b") or piece.endswith("q"):
 				# Je nach Richtung werden die Indizes definiert
 				# 5 = vorne rechts, 6 = hinten links, 7 = hinten rechts, 8 = vorne links
 				if direction == 5:
 					stepRank = step * -1
 					stepLine = step * +1
-				if direction == 6:
+				elif direction == 6:
 					stepRank = step * +1
 					stepLine = step * -1
-				if direction == 7:
+				elif direction == 7:
 					stepRank = step * +1
 					stepLine = step * +1
-				if direction == 8:
-					stepRank = step * -1
-					stepLine = step * -1
-
-			# Dame
-			if piece.endswith("q"):
-				# Je nach Richtung werden die Indizes definiert
-				# 1,2,3,4 = Turmzüge; 5,6,7,8 = Läuferzüge
-				if direction == 1:
-					stepRank = step * -1
-					stepLine = 0
-				if direction == 2:
-					stepRank = step * +1
-					stepLine = 0
-				if direction == 3:
-					stepRank = 0
-					stepLine = step * +1
-				if direction == 4:
-					stepRank = 0
-					stepLine = step * -1
-				if direction == 5:
-					stepRank = step * -1
-					stepLine = step * +1
-				if direction == 6:
-					stepRank = step * +1
-					stepLine = step * -1
-				if direction == 7:
-					stepRank = step * +1
-					stepLine = step * +1
-				if direction == 8:
+				elif direction == 8:
 					stepRank = step * -1
 					stepLine = step * -1
 
 			# Wenn Index außerhalb des Feldes (es werden bis zu 7 Schritte in jede Richtung geprüft) => prüfe nächste Richtung (direction)
-			if sourceSquareRank+stepRank not in [0,1,2,3,4,5,6,7] or sourceSquareLine+stepLine not in [0,1,2,3,4,5,6,7]:
+			if not ((0 <= sourceSquareRank+stepRank <= 7) and (0 <= sourceSquareLine+stepLine <= 7)):
 				break
 
 			# Wenn eigene Figur im Weg => prüfe nächste Richtung (direction)
@@ -573,7 +552,8 @@ def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceSquareRank,sourceSqu
 
 	return legalMovesV1
 
-def checkLegalMovesKnight(piece,legalMovesV1,sourceSquareRank,sourceSquareLine):
+
+def checkLegalMovesKnight(piece,legalMovesV1,sourceSquareRank,sourceSquareLine) -> list:
 	# Ein Springer kann max. 8 Felder betreten
 	for direction in range(1,9):
 		stepRank = 10
@@ -583,36 +563,36 @@ def checkLegalMovesKnight(piece,legalMovesV1,sourceSquareRank,sourceSquareLine):
 			stepRank = -2
 			stepLine = +1
 		# Oben rechts rechts
-		if direction == 2:
+		elif direction == 2:
 			stepRank = -1
 			stepLine = +2
 		# Unten rechts rechts
-		if direction == 3:
+		elif direction == 3:
 			stepRank = +1
 			stepLine = +2
 		# Unten unten rechts
-		if direction == 4:
+		elif direction == 4:
 			stepRank = +2
 			stepLine = +1
 		# Unten unten links
-		if direction == 5:
+		elif direction == 5:
 			stepRank = +2
 			stepLine = -1
 		# Unten links links
-		if direction == 6:
+		elif direction == 6:
 			stepRank = +1
 			stepLine = -2
 		# Oben links links
-		if direction == 7:
+		elif direction == 7:
 			stepRank = -1
 			stepLine = -2
 		# Oben oben links
-		if direction == 8:
+		elif direction == 8:
 			stepRank = -2
 			stepLine = -1
 
 		# Wenn Index außerhalb des Feldes (es wird bis zu 1 Schritt in jede Richtung geprüft) => prüfe nächste Richtung (direction)
-		if sourceSquareRank+stepRank not in [0,1,2,3,4,5,6,7] or sourceSquareLine+stepLine not in [0,1,2,3,4,5,6,7]:
+		if not ((0 <= sourceSquareRank+stepRank <= 7) and (0 <= sourceSquareLine+stepLine <= 7)):
 			continue
 
 		# Wenn eigene Figur auf dem Feld => prüfe nächste Richtung (direction)
@@ -631,7 +611,8 @@ def checkLegalMovesKnight(piece,legalMovesV1,sourceSquareRank,sourceSquareLine):
 
 	return legalMovesV1
 
-def checkLegalMovesKing(piece,legalMovesV1,sourceSquareRank,sourceSquareLine):
+
+def checkLegalMovesKing(piece,legalMovesV1,sourceSquareRank,sourceSquareLine) -> list:
 	# Ein König kann max. 8 Felder betreten
 	for direction in range(1,9):
 		stepRank = 10
@@ -641,36 +622,36 @@ def checkLegalMovesKing(piece,legalMovesV1,sourceSquareRank,sourceSquareLine):
 			stepRank = -1
 			stepLine = 0
 		# oben rechts
-		if direction == 2:
+		elif direction == 2:
 			stepRank = -1
 			stepLine = +1
 		# rechts
-		if direction == 3:
+		elif direction == 3:
 			stepRank = 0
 			stepLine = +1
 		# unten rechts
-		if direction == 4:
+		elif direction == 4:
 			stepRank = +1
 			stepLine = +1
 		# unten
-		if direction == 5:
+		elif direction == 5:
 			stepRank = +1
 			stepLine = 0
 		# unten links
-		if direction == 6:
+		elif direction == 6:
 			stepRank = +1
 			stepLine = -1
 		# links
-		if direction == 7:
+		elif direction == 7:
 			stepRank = 0
 			stepLine = -1
 		# oben links
-		if direction == 8:
+		elif direction == 8:
 			stepRank = -1
 			stepLine = -1
 
 		# Wenn Index außerhalb des Feldes (es werden bis zu 2 Schritte in jede Richtung geprüft) => prüfe nächste Richtung (direction)
-		if sourceSquareRank+stepRank not in [0,1,2,3,4,5,6,7] or sourceSquareLine+stepLine not in [0,1,2,3,4,5,6,7]:
+		if not ((0 <= sourceSquareRank+stepRank <= 7) and (0 <= sourceSquareLine+stepLine <= 7)):
 			continue
 
 		# Wenn eigene Figur im Weg => prüfe nächste Richtung (direction)
@@ -693,7 +674,7 @@ def checkLegalMovesKing(piece,legalMovesV1,sourceSquareRank,sourceSquareLine):
 # Führe bestimmte Zugaktionen durch
 # ====================================================================================================
 
-def promote(piece,targetSquareRank,playerWhite,playerBlack):
+def promote(piece,targetSquareRank,playerWhite,playerBlack) -> tuple:
 	# Checke, ob Umwandlung stattgefunden hat und speichere die Information + die Figur
 	promotion = False
 	if piece.endswith("p") and targetSquareRank in [0,7]:
@@ -706,7 +687,8 @@ def promote(piece,targetSquareRank,playerWhite,playerBlack):
 		promotion = True
 	return piece, promotion
 
-def move(piece,shortCastleRight,longCastleRight,sourceSquareRank,sourceSquareLine,targetSquareRank,targetSquareLine,capturableEnPassant):
+
+def move(piece,shortCastleRight,longCastleRight,sourceSquareRank,sourceSquareLine,targetSquareRank,targetSquareLine,capturableEnPassant) -> bool:
 
 	hasTakenPiece = False
 
@@ -759,14 +741,22 @@ def move(piece,shortCastleRight,longCastleRight,sourceSquareRank,sourceSquareLin
 
 	return hasTakenPiece
 
-def checkIfWeDoubleSteppedPawn(piece,sourceSquareRank,targetSquareRank,targetSquareLine):
+
+def checkIfWeDoubleSteppedPawn(piece,sourceSquareRank,targetSquareRank,targetSquareLine) -> list:
 	# Checke, ob wir gerade einen Bauern mit Doppelschritt bewegt haben, der als Nächstes durch enPassant vom Gegner geschlagen werden kann
 	capturableEnPassant = []
 	if piece.endswith("p") and abs(targetSquareRank-sourceSquareRank) == 2:
 		capturableEnPassant = [targetSquareRank,targetSquareLine]
 	return capturableEnPassant
 
-def isUnderAttack(color,mySquareRank,mySquareLine):
+
+# def attackedByOpponent(dangerFields,color,piece):
+# 	for df in dangerFields:
+# 		if board.iloc[df[0],df[1]] == (otherColor[color[0].lower()] + piece[0]):
+# 			return True
+
+
+def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
 
 	# Prinzip der Funktion:
 	# Vom Standpunkt des Königs werden Bauern/Springer/Läufer/Turm/Damen/Königszüge gegangen (dangerFields)
@@ -778,21 +768,21 @@ def isUnderAttack(color,mySquareRank,mySquareLine):
 
 	if piece == "wp":
 		# wenn Feld links oben innerhalb des Brettes
-		if mySquareRank-1 in [0,1,2,3,4,5,6,7] and mySquareLine-1 in [0,1,2,3,4,5,6,7]:
+		if ((0 <= mySquareRank-1 <= 7) and (0 <= mySquareLine-1 <= 7)):
 			# dann wird Feld gespeichert und später geprüft, ob da gegn. Bauer steht
 			dangerFields.append([mySquareRank-1,mySquareLine-1])
 
 		# rechts oben
-		if mySquareRank-1 in [0,1,2,3,4,5,6,7] and mySquareLine+1 in [0,1,2,3,4,5,6,7]:
+		if ((0 <= mySquareRank-1 <= 7) and (0 <= mySquareLine+1 <= 7)):
 			dangerFields.append([mySquareRank-1,mySquareLine+1])
 
 	if piece == "bp":
 		# links oben (aus Perspektive von schwarz)
-		if mySquareRank+1 in [0,1,2,3,4,5,6,7] and mySquareLine+1 in [0,1,2,3,4,5,6,7]:
+		if ((0 <= mySquareRank+1 <= 7) and (0 <= mySquareLine+1 <= 7)):
 			dangerFields.append([mySquareRank+1,mySquareLine+1])
 
 		# rechts oben (aus Perspektive von schwarz)
-		if mySquareRank+1 in [0,1,2,3,4,5,6,7] and mySquareLine-1 in [0,1,2,3,4,5,6,7]:
+		if ((0 <= mySquareRank+1 <= 7) and (0 <= mySquareLine-1 <= 7)):
 			dangerFields.append([mySquareRank+1,mySquareLine-1])
 
 	for df in dangerFields:
@@ -850,32 +840,25 @@ def isUnderAttack(color,mySquareRank,mySquareLine):
 # Starte Spiel, Schwarz und Weiß sind abwechselnd dran
 # ====================================================================================================
 
+def selectPlayerType(playerColor) -> str:
+	while True:
+		playerType = input(f"\nplayer {playerColor}:\n h (human) \n e (engine)\n\n")
+		if playerType == "h":
+			return "human"
+		elif playerType == "e":
+			return "engine"
+
+
 def startGame():
 	# Zughstorie / Bauern, die der Ziehende enPassant schlagen kann / vom Gegner kontrollierte Felder / Weiß beginnt
 	moveHistory 		= []
-	capturableEnPassant 	= []
-	color 			= "White"
+	capturableEnPassant = []
+	color 				= "White"
 
 	print("\nWelcome to my chess game!")
 
-	while True:
-		playerWhite = input("\nplayer White:\n h (human) \n e (engine)\n\n")
-		if playerWhite == "h":
-			playerWhite = "human"
-		elif playerWhite == "e":
-			playerWhite = "engine"
-		else:
-			continue
-
-		playerBlack = input("\nplayer Black:\n h (human) \n e (engine)\n\n")
-		if playerBlack == "h":
-			playerBlack = "human"
-			break
-		elif playerBlack == "e":
-			playerBlack = "engine"
-			break
-		else:
-			continue
+	playerWhite = selectPlayerType("White")
+	playerBlack = selectPlayerType("Black")
 
 	print(board)
 
@@ -896,9 +879,13 @@ def startGame():
 				continue
 
 			# Definition Funktionsparameter
-			piece 			= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur, z.B. "wp" oder "bp"
-			sourceSquareRank 	= int(rankIndex[sourceSquare[1]])		# Zahl in Indexform [0-7]
-			sourceSquareLine 	= int(lineIndex[sourceSquare[0]])		# Buchstabe in Indexform [0-7]
+			piece 				= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur auf "From"-Feld, z.B. "wp" oder "bp"
+			sourceSquareRank 	= int(rankIndex[sourceSquare[1]])				# Zahl/Reihe in Indexform [0-7]
+			sourceSquareLine 	= int(lineIndex[sourceSquare[0]])				# Buchstabe/Linie in Indexform [0-7]
+
+			# Wenn Farbe am Zug != Farbe der zu bewegenden Figur
+			if piece[0] != color[0].lower():
+				continue
 
 			# Prüfe Züge ohne Beachtung von Schach / ggf. füge Rochadezüge hinzu ohne Beachtung von Schach / ggf. entferne Züge, bei denen der König danach im Schach stehen würde
 			legalMovesV1 		= []
