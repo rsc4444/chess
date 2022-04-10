@@ -268,8 +268,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceSquareRank,sou
 					# Wenn bei Rochade der Turm als Zielfeld gewählt wurde, soll das auch dann möglich sein, wenn das Turmfeld bedroht ist
 					# Denn der König steht ja am Ende gar nicht auf dem Turmfeld
 					# Ohne continue würde das abgelehnt werden, weil dann danach gerpüft wird, ob Turmfeld im Schach steht
-					if move == [7,7]:
-						continue
+					if move == [7,7]: continue
 
 		# lange Rochade weiß
 		if piece == "wk" and board.iloc[7,4] == "wk" and move in [[7,2],[7,0]]:
@@ -291,8 +290,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceSquareRank,sou
 				else:
 					board.iloc[7,2] = "--"
 					board.iloc[7,4] = "wk"
-					if move == [7,0]:
-						continue
+					if move == [7,0]: continue
 
 		# kurze Rochade schwarz
 		if piece == "bk" and board.iloc[0,4] == "bk" and move in [[0,6],[0,7]]:
@@ -314,8 +312,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceSquareRank,sou
 				else:
 					board.iloc[0,6] = "--"
 					board.iloc[0,4] = "bk"
-					if move == [0,7]:
-						continue
+					if move == [0,7]: continue
 
 		# lange Rochade schwarz
 		if piece == "bk" and board.iloc[0,4] == "bk" and move in [[0,2],[0,0]]:
@@ -337,8 +334,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceSquareRank,sou
 				else:
 					board.iloc[0,2] = "--"
 					board.iloc[0,4] = "bk"
-					if move == [0,0]:
-						continue
+					if move == [0,0]: continue
 
 		# Inhalt von Zielfeld zwischenspeichern, um move später zu resetten
 		enterSquare = board.iloc[move[0],move[1]]
@@ -533,12 +529,10 @@ def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceSquareRank,sourceSqu
 					stepLine = step * -1
 
 			# Wenn Index außerhalb des Feldes (es werden bis zu 7 Schritte in jede Richtung geprüft) => prüfe nächste Richtung (direction)
-			if not ((0 <= sourceSquareRank+stepRank <= 7) and (0 <= sourceSquareLine+stepLine <= 7)):
-				break
+			if not ((0 <= sourceSquareRank+stepRank <= 7) and (0 <= sourceSquareLine+stepLine <= 7)): break
 
 			# Wenn eigene Figur im Weg => prüfe nächste Richtung (direction)
-			if board.iloc[sourceSquareRank+stepRank,sourceSquareLine+stepLine].startswith(piece[0]):
-				break
+			if board.iloc[sourceSquareRank+stepRank,sourceSquareLine+stepLine].startswith(piece[0]): break
 
 			# Wenn Gegner im Weg => füge Zug hinzu => prüfe nächste Richtung (direction)
 			if board.iloc[sourceSquareRank+stepRank,sourceSquareLine+stepLine].startswith(otherColor[piece[0]]):
@@ -592,12 +586,10 @@ def checkLegalMovesKnight(piece,legalMovesV1,sourceSquareRank,sourceSquareLine) 
 			stepLine = -1
 
 		# Wenn Index außerhalb des Feldes (es wird bis zu 1 Schritt in jede Richtung geprüft) => prüfe nächste Richtung (direction)
-		if not ((0 <= sourceSquareRank+stepRank <= 7) and (0 <= sourceSquareLine+stepLine <= 7)):
-			continue
+		if not ((0 <= sourceSquareRank+stepRank <= 7) and (0 <= sourceSquareLine+stepLine <= 7)): continue
 
 		# Wenn eigene Figur auf dem Feld => prüfe nächste Richtung (direction)
-		if board.iloc[sourceSquareRank+stepRank,sourceSquareLine+stepLine].startswith(piece[0]):
-			continue
+		if board.iloc[sourceSquareRank+stepRank,sourceSquareLine+stepLine].startswith(piece[0]): continue
 
 		# Wenn Gegner auf dem Feld => füge Zug hinzu => prüfe nächste Richtung (direction)
 		if board.iloc[sourceSquareRank+stepRank,sourceSquareLine+stepLine].startswith(otherColor[piece[0]]):
@@ -651,12 +643,10 @@ def checkLegalMovesKing(piece,legalMovesV1,sourceSquareRank,sourceSquareLine) ->
 			stepLine = -1
 
 		# Wenn Index außerhalb des Feldes (es werden bis zu 2 Schritte in jede Richtung geprüft) => prüfe nächste Richtung (direction)
-		if not ((0 <= sourceSquareRank+stepRank <= 7) and (0 <= sourceSquareLine+stepLine <= 7)):
-			continue
+		if not ((0 <= sourceSquareRank+stepRank <= 7) and (0 <= sourceSquareLine+stepLine <= 7)): continue
 
 		# Wenn eigene Figur im Weg => prüfe nächste Richtung (direction)
-		if board.iloc[sourceSquareRank+stepRank,sourceSquareLine+stepLine].startswith(piece[0]):
-			continue
+		if board.iloc[sourceSquareRank+stepRank,sourceSquareLine+stepLine].startswith(piece[0]): continue
 
 		# Wenn Gegner im Weg => füge Zug hinzu => prüfe nächste Richtung (direction)
 		if board.iloc[sourceSquareRank+stepRank,sourceSquareLine+stepLine].startswith(otherColor[piece[0]]):
@@ -875,8 +865,7 @@ def startGame():
 				sourceSquare = letters[random.randint(0,7)]+numbers[random.randint(0,7)]
 
 			# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 2. Zeichen 1-8
-			if len(sourceSquare) != 2 or sourceSquare[0] not in letters or sourceSquare[1] not in numbers:
-				continue
+			if len(sourceSquare) != 2 or sourceSquare[0] not in letters or sourceSquare[1] not in numbers: continue
 
 			# Definition Funktionsparameter
 			piece 				= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur auf "From"-Feld, z.B. "wp" oder "bp"
@@ -884,8 +873,7 @@ def startGame():
 			sourceSquareLine 	= int(lineIndex[sourceSquare[0]])				# Buchstabe/Linie in Indexform [0-7]
 
 			# Wenn Farbe am Zug != Farbe der zu bewegenden Figur
-			if piece[0] != color[0].lower():
-				continue
+			if piece[0] != color[0].lower(): continue
 
 			# Prüfe Züge ohne Beachtung von Schach / ggf. füge Rochadezüge hinzu ohne Beachtung von Schach / ggf. entferne Züge, bei denen der König danach im Schach stehen würde
 			legalMovesV1 		= []
@@ -910,16 +898,14 @@ def startGame():
 				targetSquare = letters[random.randint(0,7)]+numbers[random.randint(0,7)]
 
 			# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 1. Zeichen 1-8
-			if len(targetSquare) != 2 or targetSquare[0] not in letters or targetSquare[1] not in numbers:
-				continue
+			if len(targetSquare) != 2 or targetSquare[0] not in letters or targetSquare[1] not in numbers: continue
 
 			# Defintion Prüfparameter
 			targetSquareRank 	= int(rankIndex[targetSquare[1]])
 			targetSquareLine 	= int(lineIndex[targetSquare[0]])
 
 			# Wiederholung Eingabe, wenn Zielfeld nicht legal
-			if [targetSquareRank,targetSquareLine] not in legalMovesV2:
-				continue
+			if [targetSquareRank,targetSquareLine] not in legalMovesV2: continue
 
 			# Bei Maschine wird gewähltes Feld jetzt ausgegeben, also erst nachdem legales Feld gefunden wurde
 			if (playerWhite == "engine" and color == "White") or (playerBlack == "engine" and color == "Black"):
