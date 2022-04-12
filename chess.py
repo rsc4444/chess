@@ -19,6 +19,17 @@ board = [
 ["wr","wn","wb","wq","wk","wb","wn","wr"],
 ]
 
+# board = [
+# ["00","01","02","03","04","05","06","07"],
+# ["10","11","12","13","14","15","16","17"],
+# ["20","21","22","23","24","25","26","27"],
+# ["30","31","32","33","34","35","36","37"],
+# ["40","41","42","43","44","45","46","47"],
+# ["50","51","52","53","54","55","56","57"],
+# ["60","61","62","63","64","65","66","67"],
+# ["70","71","72","73","74","75","76","77"],
+# ]
+
 board = pd.DataFrame(board,index=["8","7","6","5","4","3","2","1"],columns=["a","b","c","d","e","f","g","h"])
 boardComposition = board.values.tolist()
 boardCompositions = []
@@ -29,6 +40,23 @@ numbers 		= ("1","2","3","4","5","6","7","8")
 lineIndex 		= {"a": "0", "b": "1", "c": "2", "d": "3", "e": "4", "f": "5", "g": "6", "h": "7"}
 rankIndex 		= {"8": "0", "7": "1", "6": "2", "5": "3", "4": "4", "3": "5", "2": "6", "1": "7"}
 otherColor		= {"w": "b", "b": "w"}
+
+# ====================================================================================================
+# FLIP board
+# ====================================================================================================
+
+# for sourceSquareRank in range(4):
+# 	for sourceSquareLine in range(8):
+# 		piece1 = board.iloc[sourceSquareRank,sourceSquareLine]
+# 		piece2 = board.iloc[7-sourceSquareRank,7-sourceSquareLine]
+
+# 		board.iloc[sourceSquareRank,sourceSquareLine] = piece2
+# 		board.iloc[7-sourceSquareRank,7-sourceSquareLine] = piece1
+
+# board = board.T
+# board = board.T
+
+# board.iloc[::-1]
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
@@ -49,7 +77,7 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,captu
 	# 	boardCompositions = []
 
 	if boardCompositions.count(boardComposition) == 3:
-		sys.exit("Threefold repitition! This is a draw.")
+		sys.exit("Threefold repetition! This is a draw.")
 
 	# Alle 64 Felder durchgehen und (Figuren)werte zählen für Remisprüfung durch zu wenig Material
 	# Alle 64 Felder durchgehen und legale Züge speichern für Patt- und Mattprüfung
@@ -740,10 +768,10 @@ def checkIfWeDoubleSteppedPawn(piece,sourceSquareRank,targetSquareRank,targetSqu
 	return capturableEnPassant
 
 
-# def attackedByOpponent(dangerFields,color,piece):
-# 	for df in dangerFields:
-# 		if board.iloc[df[0],df[1]] == (otherColor[color[0].lower()] + piece[0]):
-# 			return True
+def attackedByOpponent(dangerFields,color,piece) -> bool:
+	for df in dangerFields:
+		if board.iloc[df[0],df[1]] == (otherColor[color[0].lower()] + piece[1]):
+			return True
 
 
 def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
@@ -775,54 +803,43 @@ def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
 		if ((0 <= mySquareRank+1 <= 7) and (0 <= mySquareLine-1 <= 7)):
 			dangerFields.append([mySquareRank+1,mySquareLine-1])
 
-	for df in dangerFields:
-		if board.iloc[df[0],df[1]] == (otherColor[color[0].lower()] + "p"):
-			return True
+	if attackedByOpponent(dangerFields,color,piece): return True
 
 	# Turm
 	piece = color[0].lower()+"r"
 	dangerFields = []
 	dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,mySquareRank,mySquareLine)
 
-	for df in dangerFields:
-		if board.iloc[df[0],df[1]] == (otherColor[color[0].lower()] + "r"):
-			return True
+	if attackedByOpponent(dangerFields,color,piece): return True
 
 	# Läufer
 	piece = color[0].lower()+"b"
 	dangerFields = []
 	dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,mySquareRank,mySquareLine)
 	
-	for df in dangerFields:
-		if board.iloc[df[0],df[1]] == (otherColor[color[0].lower()] + "b"):
-			return True
+	if attackedByOpponent(dangerFields,color,piece): return True
 
 	# Dame
 	piece = color[0].lower()+"q"
 	dangerFields = []
 	dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,mySquareRank,mySquareLine)
 	
-	for df in dangerFields:
-		if board.iloc[df[0],df[1]] == (otherColor[color[0].lower()] + "q"):
-			return True
+	if attackedByOpponent(dangerFields,color,piece): return True
 
 	# Springer
 	piece = color[0].lower()+"n"
 	dangerFields = []
 	dangerFields = checkLegalMovesKnight(piece,dangerFields,mySquareRank,mySquareLine)
 
-	for df in dangerFields:
-		if board.iloc[df[0],df[1]] == (otherColor[color[0].lower()] + "n"):
-			return True
+	if attackedByOpponent(dangerFields,color,piece): return True
 
 	# König
 	piece = color[0].lower()+"k"
 	dangerFields = []
 	dangerFields = checkLegalMovesKing(piece,dangerFields,mySquareRank,mySquareLine)
 
-	for df in dangerFields:
-		if board.iloc[df[0],df[1]] == (otherColor[color[0].lower()] + "k"):
-			return True
+	if attackedByOpponent(dangerFields,color,piece): return True
+
 
 	return False
 
@@ -847,8 +864,10 @@ def startGame():
 
 	print("\nWelcome to my chess game!")
 
-	playerWhite = selectPlayerType("White")
-	playerBlack = selectPlayerType("Black")
+	# playerWhite = selectPlayerType("White")
+	# playerBlack = selectPlayerType("Black")
+	playerWhite = "human"
+	playerBlack = "human"
 
 	print(board)
 
