@@ -34,13 +34,13 @@ boardCompositions.append(boardComposition)
 # FLIP board
 # ====================================================================================================
 
-def flipBoard(board, color):
-	for y in range(4):
-		for x in range(8):
-			board.iloc[y,x], board.iloc[7-y,7-x] = board.iloc[7-y,7-x], board.iloc[y,x]
+# def flipBoard(board, color):
+# 	for y in range(4):
+# 		for x in range(8):
+# 			board.iloc[y,x], board.iloc[7-y,7-x] = board.iloc[7-y,7-x], board.iloc[y,x]
 
-	i = -1 if color[0].lower() == "b" else 1
-	return pd.DataFrame(board,index = NUMBERS[::i], columns = LETTERS[::i])
+# 	i = -1 if color[0].lower() == "b" else 1
+# 	return pd.DataFrame(board,index = NUMBERS[::i], columns = LETTERS[::i])
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
