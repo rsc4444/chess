@@ -3,9 +3,10 @@ import numpy as np
 import pandas as pd
 import random
 import sys
+import time
 
 # ====================================================================================================
-# Variablen
+# KONSTANTEN + Variablen
 # ====================================================================================================
 
 board = [
@@ -19,50 +20,34 @@ board = [
 ["wr","wn","wb","wq","wk","wb","wn","wr"],
 ]
 
-# board = [
-# ["00","01","02","03","04","05","06","07"],
-# ["10","11","12","13","14","15","16","17"],
-# ["20","21","22","23","24","25","26","27"],
-# ["30","31","32","33","34","35","36","37"],
-# ["40","41","42","43","44","45","46","47"],
-# ["50","51","52","53","54","55","56","57"],
-# ["60","61","62","63","64","65","66","67"],
-# ["70","71","72","73","74","75","76","77"],
-# ]
+NUMBERS 		= ("8","7","6","5","4","3","2","1")
+LETTERS 		= ("a","b","c","d","e","f","g","h")
+otherColor		= {"w": "b", "b": "w"}
 
-board = pd.DataFrame(board,index=["8","7","6","5","4","3","2","1"],columns=["a","b","c","d","e","f","g","h"])
+board = pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
+
 boardComposition = board.values.tolist()
 boardCompositions = []
 boardCompositions.append(boardComposition)
-
-letters 		= ("a","b","c","d","e","f","g","h")
-numbers 		= ("1","2","3","4","5","6","7","8")
-lineIndex 		= {"a": "0", "b": "1", "c": "2", "d": "3", "e": "4", "f": "5", "g": "6", "h": "7"}
-rankIndex 		= {"8": "0", "7": "1", "6": "2", "5": "3", "4": "4", "3": "5", "2": "6", "1": "7"}
-otherColor		= {"w": "b", "b": "w"}
 
 # ====================================================================================================
 # FLIP board
 # ====================================================================================================
 
-# for sourceSquareRank in range(4):
-# 	for sourceSquareLine in range(8):
-# 		piece1 = board.iloc[sourceSquareRank,sourceSquareLine]
-# 		piece2 = board.iloc[7-sourceSquareRank,7-sourceSquareLine]
+# def flipBoard(board, color):
+# 	for y in range(4):
+# 		for x in range(8):
+# 			board.iloc[y,x], board.iloc[7-y,7-x] = board.iloc[7-y,7-x], board.iloc[y,x]
 
-# 		board.iloc[sourceSquareRank,sourceSquareLine] = piece2
-# 		board.iloc[7-sourceSquareRank,7-sourceSquareLine] = piece1
-
-# board = board.T
-# board = board.T
-
-# board.iloc[::-1]
+# 	i = -1 if color[0].lower() == "b" else 1
+# 	board =  pd.DataFrame(board,index = NUMBERS[::i], columns = LETTERS[::i])
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
 # ====================================================================================================
 
 def checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,capturableEnPassant):
+
 	totalValuePieces 	= 0
 	lightSquaredBishops = 0
 	darkSquaredBishops 	= 0
@@ -72,7 +57,7 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,captu
 	boardComposition = board.values.tolist()
 	boardCompositions.append(boardComposition)
 
-	# Nach Schlag- oder Bauernzug Liste leeren, um Rechenleistung zu sparen
+	# Nach Schlag- oder Bauernzug Liste leeren, um Rechenleistung zu sparen => wirkungslos?
 	# if moveHistory and (moveHistory[-1][0][1] == "p" or moveHistory[-1][3] or moveHistory[-1][4]):
 	# 	boardCompositions = []
 
@@ -145,56 +130,38 @@ def checkIfKingInCheck(color) -> bool:
 def checkShortCastleRight(color,moveHistory) -> bool:
 	# Prüfe Recht für kurze Rochade weiß
 	# Wenn König und Turm auf Ausgangsfeld stehen und Felder dazwischen frei => Rochade bis jetzt möglich
-	if color == "White":
-		if board.loc["1","e"] == "wk":
-			if board.loc["1","f"] == "--":
-				if board.loc["1","g"] == "--":
-					if board.loc["1","h"] == "wr":
-						# Wenn König oder Turm schon bewegt wurden => Rochade nicht möglich
-						for move in moveHistory:
-							if move[1] == "e1" or move[1] == "h1" or move[2] == "h1":
-								return False
-						# Wenn auch König und Turm noch nicht bewegt wurden => Rochade möglich
-						return True
+	if color == "White" and board.loc["1","e"] == "wk" and board.loc["1","f"] == "--" and board.loc["1","g"] == "--" and board.loc["1","h"] == "wr":
+		# Wenn König oder Turm schon bewegt wurden => Rochade nicht möglich
+		for move in moveHistory:
+			if move[1] == "e1" or move[1] == "h1" or move[2] == "h1":
+				return False
+		# Wenn auch König und Turm noch nicht bewegt wurden => Rochade möglich
+		return True
 
 	# Prüfe Recht für kurze Rochade schwarz
-	if color == "Black":
-		if board.loc["8","e"] == "bk":
-			if board.loc["8","f"] == "--":
-				if board.loc["8","g"] == "--":
-					if board.loc["8","h"] == "br":
-						for move in moveHistory:
-							if move[1] == "e8" or move[1] == "h8" or move[2] == "h8":
-								return False
-						return True
+	if color=="Black" and board.loc["8","e"]=="bk" and board.loc["8","f"]=="--" and board.loc["8","g"]=="--" and board.loc["8","h"]=="br":
+		for move in moveHistory:
+			if move[1]=="e8" or move[1]=="h8" or move[2]=="h8":
+				return False
+		return True
 
 	return False
 
 
 def checkLongCastleRight(color,moveHistory) -> bool:
 	# Prüfe Recht für lange Rochade weiß
-	if color == "White":
-		if board.loc["1","a"] == "wr":
-			if board.loc["1","b"] == "--":
-				if board.loc["1","c"] == "--":
-					if board.loc["1","d"] == "--":
-						if board.loc["1","e"] == "wk":
-							for move in moveHistory:
-								if move[1] == "a1" or move[2] == "a1" or move[1] == "e1":
-									return False
-							return True
+	if color=="White" and board.loc["1","a"]=="wr" and board.loc["1","b"]=="--" and board.loc["1","c"]=="--" and board.loc["1","d"]=="--" and board.loc["1","e"]=="wk":
+		for move in moveHistory:
+			if move[1]=="a1" or move[2]=="a1" or move[1]=="e1":
+				return False
+		return True
 
 	# Prüfe Recht für lange Rochade schwarz
-	if color == "Black":
-		if board.loc["8","a"] == "br":
-			if board.loc["8","b"] == "--":
-				if board.loc["8","c"] == "--":
-					if board.loc["8","d"] == "--":
-						if board.loc["8","e"] == "bk":
-							for move in moveHistory:
-								if move[1] == "a8" or move[2] == "a8" or move[1] == "e8":
-									return False
-							return True
+	if color=="Black" and board.loc["8","a"]=="br" and board.loc["8","b"]=="--" and board.loc["8","c"]=="--" and board.loc["8","d"]=="--" and board.loc["8","e"]=="bk":
+		for move in moveHistory:
+			if move[1]=="a8" or move[2]=="a8" or move[1]=="e8":
+				return False
+		return True
 
 	return False
 
@@ -814,7 +781,6 @@ def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
 
 	if attackedByOpponent(dangerFields,color,piece): return True
 
-
 	return False
 
 # ====================================================================================================
@@ -840,8 +806,8 @@ def startGame():
 
 	# playerWhite = selectPlayerType("White")
 	# playerBlack = selectPlayerType("Black")
-	playerWhite = "human"
-	playerBlack = "human"
+	playerWhite = "engine"
+	playerBlack = "engine"
 
 	print(board)
 
@@ -855,15 +821,15 @@ def startGame():
 			if (playerWhite == "human" and color == "White") or (playerBlack == "human" and color == "Black"):
 				sourceSquare = input("From: ")
 			if (playerWhite == "engine" and color == "White") or (playerBlack == "engine" and color == "Black"):
-				sourceSquare = letters[random.randint(0,7)]+numbers[random.randint(0,7)]
+				sourceSquare = LETTERS[random.randint(0,7)]+NUMBERS[random.randint(0,7)]
 
 			# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 2. Zeichen 1-8
-			if len(sourceSquare) != 2 or sourceSquare[0] not in letters or sourceSquare[1] not in numbers: continue
+			if len(sourceSquare) != 2 or sourceSquare[0] not in LETTERS or sourceSquare[1] not in NUMBERS: continue
 
 			# Definition Funktionsparameter
-			piece 				= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur auf "From"-Feld, z.B. "wp" oder "bp"
-			sourceSquareRank 	= int(rankIndex[sourceSquare[1]])				# Zahl/Reihe in Indexform [0-7]
-			sourceSquareLine 	= int(lineIndex[sourceSquare[0]])				# Buchstabe/Linie in Indexform [0-7]
+			piece 				= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur auf "From"-Feld, z.B. "wp" oder "bp"s
+			sourceSquareRank 	= int(NUMBERS.index(sourceSquare[1]))			# Zahl/Reihe in Indexform [0-7]
+			sourceSquareLine 	= int(LETTERS.index(sourceSquare[0]))			# Buchstabe/Linie in Indexform [0-7]
 
 			# Wenn Farbe am Zug != Farbe der zu bewegenden Figur
 			if piece[0] != color[0].lower(): continue
@@ -888,14 +854,14 @@ def startGame():
 			if (playerWhite == "human" and color == "White") or (playerBlack == "human" and color == "Black"):
 				targetSquare = input("To: ")
 			if (playerWhite == "engine" and color == "White") or (playerBlack == "engine" and color == "Black"):
-				targetSquare = letters[random.randint(0,7)]+numbers[random.randint(0,7)]
+				targetSquare = LETTERS[random.randint(0,7)]+NUMBERS[random.randint(0,7)]
 
 			# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 1. Zeichen 1-8
-			if len(targetSquare) != 2 or targetSquare[0] not in letters or targetSquare[1] not in numbers: continue
+			if len(targetSquare) != 2 or targetSquare[0] not in LETTERS or targetSquare[1] not in NUMBERS: continue
 
 			# Defintion Prüfparameter
-			targetSquareRank 	= int(rankIndex[targetSquare[1]])
-			targetSquareLine 	= int(lineIndex[targetSquare[0]])
+			targetSquareRank 	= int(NUMBERS.index(targetSquare[1]))
+			targetSquareLine 	= int(LETTERS.index(targetSquare[0]))
 
 			# Wiederholung Eingabe, wenn Zielfeld nicht legal
 			if [targetSquareRank,targetSquareLine] not in legalMovesV2: continue
@@ -917,6 +883,10 @@ def startGame():
 
 		# Farbe wechseln
 		color = "White" if color == "Black" else "Black"
+
+		# flipBoard(board, color)
+		# time.sleep(1)
+		# print(board)
 
 if __name__=="__main__":
 	startGame()
