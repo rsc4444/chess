@@ -405,8 +405,8 @@ def checkLegalMovesWhitePawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capt
 			if board.iloc[sourceSquareRank-1,sourceSquareLine+1].startswith("b"):
 				legalMovesV1.append([sourceSquareRank-1,sourceSquareLine+1])
 
-	# Wenn Bauer in 3./4./6. Reihe
-	elif sourceSquareRank in [5,4,2]:
+	# Wenn Bauer in 3./4./6./7. Reihe
+	elif sourceSquareRank in [5,4,2,1]:
 		# Wenn Feld davor frei => füge Zug hinzu
 		if board.iloc[sourceSquareRank-1,sourceSquareLine] == "--":
 			legalMovesV1.append([sourceSquareRank-1,sourceSquareLine])
@@ -443,22 +443,6 @@ def checkLegalMovesWhitePawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capt
 			elif capturableEnPassant == [sourceSquareRank,sourceSquareLine+1]:
 				legalMovesV1.append([sourceSquareRank-1,sourceSquareLine+1])
 
-	# Wenn Bauer in 7. Reihe
-	elif sourceSquareRank == 1:
-		# Wenn Feld davor frei => füge Zug hinzu
-		if board.iloc[sourceSquareRank-1,sourceSquareLine] == "--":
-			legalMovesV1.append([sourceSquareRank-1,sourceSquareLine])
-		# Wenn wir nicht linke Spalte sind => prüfe Schlagzug nach links
-		if sourceSquareLine != 0:
-			# Wenn links oben Figur des Gegners steht => füge Zug hinzu
-			if board.iloc[sourceSquareRank-1,sourceSquareLine-1].startswith("b"):
-				legalMovesV1.append([sourceSquareRank-1,sourceSquareLine-1])
-		# Wenn wir nicht rechte Spalte sind => prüfe Schlagzug nach rechts
-		if sourceSquareLine != 7:
-			# Wenn rechts oben Figur des Gegners steht => füge Zug hinzu
-			if board.iloc[sourceSquareRank-1,sourceSquareLine+1].startswith("b"):
-				legalMovesV1.append([sourceSquareRank-1,sourceSquareLine+1])
-
 	return legalMovesV1
 
 
@@ -475,7 +459,7 @@ def checkLegalMovesBlackPawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capt
 			if board.iloc[sourceSquareRank+1,sourceSquareLine-1].startswith("w"):
 				legalMovesV1.append([sourceSquareRank+1,sourceSquareLine-1])
 
-	elif sourceSquareRank in [2,3,5]:
+	elif sourceSquareRank in [2,3,5,6]:
 		if board.iloc[sourceSquareRank+1,sourceSquareLine] == "--":
 			legalMovesV1.append([sourceSquareRank+1,sourceSquareLine])
 		if sourceSquareLine != 7:
@@ -497,16 +481,6 @@ def checkLegalMovesBlackPawn(legalMovesV1,sourceSquareRank,sourceSquareLine,capt
 			if board.iloc[sourceSquareRank+1,sourceSquareLine-1].startswith("w"):
 				legalMovesV1.append([sourceSquareRank+1,sourceSquareLine-1])
 			elif capturableEnPassant == [sourceSquareRank,sourceSquareLine-1]:
-				legalMovesV1.append([sourceSquareRank+1,sourceSquareLine-1])
-
-	elif sourceSquareRank == 6:
-		if board.iloc[sourceSquareRank+1,sourceSquareLine] == "--":
-			legalMovesV1.append([sourceSquareRank+1,sourceSquareLine])
-		if sourceSquareLine != 7:
-			if board.iloc[sourceSquareRank+1,sourceSquareLine+1].startswith("w"):
-				legalMovesV1.append([sourceSquareRank+1,sourceSquareLine+1])
-		if sourceSquareLine != 0:
-			if board.iloc[sourceSquareRank+1,sourceSquareLine-1].startswith("w"):
 				legalMovesV1.append([sourceSquareRank+1,sourceSquareLine-1])
 
 	return legalMovesV1
