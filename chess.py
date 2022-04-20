@@ -180,10 +180,10 @@ def checkLegalMovesV1(piece,legalMovesV1,sqr,sql,capturableEnPassant) -> list:
 		legalMovesV1  = checkLegalMovesRookBishopQueen(piece,legalMovesV1,sqr,sql)
 
 	if piece.endswith("n"):
-		legalMovesV1  = checkLegalMovesKnight(piece,legalMovesV1,sqr,sql)
+		legalMovesV1  = checkLegalMovesKnightKing(piece,legalMovesV1,sqr,sql)
 
 	if piece.endswith("k"):
-		legalMovesV1  = checkLegalMovesKing(piece,legalMovesV1,sqr,sql)
+		legalMovesV1  = checkLegalMovesKnightKing(piece,legalMovesV1,sqr,sql)
 
 	return legalMovesV1
 
@@ -393,62 +393,46 @@ def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sqr,sql) -> list:
 	return legalMovesV1
 
 
-def checkLegalMovesKnight(piece,legalMovesV1,sqr,sql) -> list:
-	# Ein Springer kann max. 8 Felder betreten
+def checkLegalMovesKnightKing(piece,legalMovesV1,sqr,sql) -> list:
+	# Ein Springer/König kann max. 8 Felder betreten
 	for direction in range(1,9):
-		stepRank, stepLine = 10, 10		
-		if direction == 1:   # oben oben rechts
-			stepRank, stepLine = -2, +1		
-		elif direction == 2: # oben rechts rechts
-			stepRank, stepLine = -1, +2		
-		elif direction == 3: # unten rechts rechts
-			stepRank, stepLine = +1, +2		
-		elif direction == 4: # unten unten rechts
-			stepRank, stepLine = +2, +1		
-		elif direction == 5: # unten unten links
-			stepRank, stepLine = +2, -1		
-		elif direction == 6: # unten links links
-			stepRank, stepLine = +1, -2		
-		elif direction == 7: # oben links links
-			stepRank, stepLine = -1, -2		
-		elif direction == 8: # oben oben links
-			stepRank, stepLine = -2, -1
+		stepRank, stepLine = 10, 10
 
-		if not ((0 <= sqr+stepRank <= 7) and (0 <= sql+stepLine <= 7)): continue #Index außerhalb => nächste Richtung
+		if piece.endswith("n"): # Springer
+			if direction == 1:   # oben oben rechts
+				stepRank, stepLine = -2, +1		
+			elif direction == 2: # oben rechts rechts
+				stepRank, stepLine = -1, +2		
+			elif direction == 3: # unten rechts rechts
+				stepRank, stepLine = +1, +2		
+			elif direction == 4: # unten unten rechts
+				stepRank, stepLine = +2, +1		
+			elif direction == 5: # unten unten links
+				stepRank, stepLine = +2, -1		
+			elif direction == 6: # unten links links
+				stepRank, stepLine = +1, -2		
+			elif direction == 7: # oben links links
+				stepRank, stepLine = -1, -2		
+			elif direction == 8: # oben oben links
+				stepRank, stepLine = -2, -1
 
-		if board.iloc[sqr+stepRank,sql+stepLine].startswith(piece[0]): continue #Eigene Figur im Weg => nächste Richtung
-
-		if board.iloc[sqr+stepRank,sql+stepLine].startswith(otherColor[piece[0]]): #Gegner im Weg => Zug hinzu + nächste Richtung
-			legalMovesV1.append([sqr+stepRank,sql+stepLine])
-			continue
-
-		if board.iloc[sqr+stepRank,sql+stepLine] == "--": #Feld frei => Zug hinzu + nächste Richtung
-			legalMovesV1.append([sqr+stepRank,sql+stepLine])
-			continue
-
-	return legalMovesV1
-
-
-def checkLegalMovesKing(piece,legalMovesV1,sqr,sql) -> list:
-	# Ein König kann max. 8 Felder betreten
-	for direction in range(1,9):
-		stepRank, stepLine = 10, 10		
-		if direction == 1:   # oben
-			stepRank, stepLine = -1, 0		
-		elif direction == 2: # oben rechts
-			stepRank, stepLine = -1, +1		
-		elif direction == 3: # rechts
-			stepRank, stepLine = 0, +1		
-		elif direction == 4: # unten rechts
-			stepRank, stepLine = +1, +1		
-		elif direction == 5: # unten
-			stepRank, stepLine = +1, 0		
-		elif direction == 6: # unten links
-			stepRank, stepLine = +1, -1		
-		elif direction == 7: # links
-			stepRank, stepLine = 0, -1		
-		elif direction == 8: # oben links
-			stepRank, stepLine = -1, -1
+		if piece.endswith("k"): # König
+			if direction == 1:   # oben
+				stepRank, stepLine = -1, 0
+			elif direction == 2: # oben rechts
+				stepRank, stepLine = -1, +1
+			elif direction == 3: # rechts
+				stepRank, stepLine = 0, +1
+			elif direction == 4: # unten rechts
+				stepRank, stepLine = +1, +1
+			elif direction == 5: # unten
+				stepRank, stepLine = +1, 0
+			elif direction == 6: # unten links
+				stepRank, stepLine = +1, -1
+			elif direction == 7: # links
+				stepRank, stepLine = 0, -1
+			elif direction == 8: # oben links
+				stepRank, stepLine = -1, -1
 
 		if not ((0 <= sqr+stepRank <= 7) and (0 <= sql+stepLine <= 7)): continue #Index außerhalb => nächste Richtung
 
@@ -554,9 +538,8 @@ def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
 	dangerFields = []
 
 	if piece == "wp":
-		# wenn Feld links oben innerhalb des Brettes
+		# wenn Feld links oben innerhalb Brett => Feld speichern und später prüfen, ob da gegn. Bauer steht
 		if ((0 <= mySquareRank-1 <= 7) and (0 <= mySquareLine-1 <= 7)):
-			# dann wird Feld gespeichert und später geprüft, ob da gegn. Bauer steht
 			dangerFields.append([mySquareRank-1,mySquareLine-1])
 		# rechts oben
 		if ((0 <= mySquareRank-1 <= 7) and (0 <= mySquareLine+1 <= 7)):
@@ -587,12 +570,12 @@ def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
 
 	piece = color[0].lower()+"n" # Springer
 	dangerFields = []
-	dangerFields = checkLegalMovesKnight(piece,dangerFields,mySquareRank,mySquareLine)
+	dangerFields = checkLegalMovesKnightKing(piece,dangerFields,mySquareRank,mySquareLine)
 	if attackedByOpponent(dangerFields,color,piece): return True
 
 	piece = color[0].lower()+"k" # König
 	dangerFields = []
-	dangerFields = checkLegalMovesKing(piece,dangerFields,mySquareRank,mySquareLine)
+	dangerFields = checkLegalMovesKnightKing(piece,dangerFields,mySquareRank,mySquareLine)
 	if attackedByOpponent(dangerFields,color,piece): return True
 
 	return False
