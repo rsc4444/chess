@@ -1,5 +1,4 @@
 import copy
-import numpy as np
 import pandas as pd
 import random
 import sys
@@ -31,22 +30,10 @@ boardCompositions = []
 boardCompositions.append(boardComposition)
 
 # ====================================================================================================
-# FLIP board
-# ====================================================================================================
-
-# def flipBoard(color,board):
-# 	for y in range(4):
-# 		for x in range(8):
-# 			board[y][x], board[7-y][7-x] = board[7-y][7-x], board[y][x]
-# 	i = -1 if color[0].lower() == "b" else 1
-# 	return pd.DataFrame(board, index = NUMBERS[::i], columns = LETTERS[::i])
-
-# ====================================================================================================
 # Prüfe bestimmte Zustände
 # ====================================================================================================
 
-def checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,capturableEnPassant):
-
+def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,capturableEnPassant):
 	totalValuePieces 	= 0
 	lightSquaredBishops = 0
 	darkSquaredBishops 	= 0
@@ -105,10 +92,10 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,captu
 	# Wenn keine legalen Züge...
 	if not legalMovesV2:
 		# ...aber König nicht im Schach => Patt
-		if not isMyKingInCheck:
+		if not myKingInCheck:
 			sys.exit("\nStalemate! This is a draw.\n")
 		# ...und König im Schach => Matt
-		if isMyKingInCheck:
+		if myKingInCheck:
 			color = "White" if color == "Black" else "Black"
 			sys.exit("\nCheckmate! "+color+" wins.\n")
 
@@ -116,7 +103,7 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,captu
 		sys.exit("\n50 moves without moving a pawn, taking a piece or mating the king! This is a draw.\n")
 
 
-def checkIfKingInCheck(color) -> bool:
+def isMyKingInCheck(color) -> bool:
 	# Iteration über das Brett. Feld mit eigenem König wird gesucht
 	for sqr in range(8):
 		for sql in range(8):
@@ -165,28 +152,23 @@ def checkLongCastleRight(color,moveHistory) -> bool:
 	return False
 
 
-def checkCastleMovesV1(color,isMyKingInCheck,piece,legalMovesV1,moveHistory) -> tuple:
+def checkCastleMovesV1(color,myKingInCheck,piece,legalMovesV1,moveHistory) -> tuple:
 	shortCastleRight 	= checkShortCastleRight(color,moveHistory)
 	longCastleRight 	= checkLongCastleRight(color,moveHistory)
 
-	# König darf nicht im Schach stehen
-	if not isMyKingInCheck:
-		# Wenn König zieht
+	# König darf nicht im Schach stehen und König muss am Zug sein => füge Rochadezüge hinzu
+	if not myKingInCheck:
 		if piece == "wk":
-			# kurze Rochade weiß
 			if shortCastleRight:
 				legalMovesV1.append([7,6])
 				legalMovesV1.append([7,7])
-			# lange Rochade weiß
 			if longCastleRight:
 				legalMovesV1.append([7,0])
 				legalMovesV1.append([7,2])
-		if piece == "bk":	
-			# kurze Rochade schwarz
+		if piece == "bk":
 			if shortCastleRight:
 				legalMovesV1.append([0,6])
 				legalMovesV1.append([0,7])
-			# lange Rochade schwarz
 			if longCastleRight:
 				legalMovesV1.append([0,0])
 				legalMovesV1.append([0,2])
@@ -198,7 +180,6 @@ def checkCastleMovesV1(color,isMyKingInCheck,piece,legalMovesV1,moveHistory) -> 
 # ====================================================================================================
 
 def checkLegalMovesV1(piece,legalMovesV1,sqr,sql,capturableEnPassant) -> list:
-
 	if piece == "wp":
 		legalMovesV1  = checkLegalMovesWhitePawn(legalMovesV1,sqr,sql,capturableEnPassant)
 
@@ -231,44 +212,35 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql) -> list:
 			# 1. Königsschritt gehen (Zwischenschritt)
 			board.iloc[7,4] = "--"
 			board.iloc[7,5] = "wk"
-			# Wenn König im Schach
-			if checkIfKingInCheck(color):
-				# Dann Rochadezug entfernen
-				legalMovesV4.remove(move)
-				# Ausgangsstellung wiederherstellen
+			# Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
+			if isMyKingInCheck(color):
+				legalMovesV4.remove(move)				
 				board.iloc[7,5] = "--"
 				board.iloc[7,4] = "wk"
-				# Und nächster Zug
 				continue
-			# Wenn König nach 1. Königsschritt nicht im Schach
+			# Wenn König nach 1. Königsschritt nicht im Schach => 2. Königsschritt gehen (Zielfeld)
 			else:
-				# 2. Königsschritt gehen (Zielfeld)
 				board.iloc[7,5] = "--"
 				board.iloc[7,6] = "wk"
-				# Wenn König im Schach
-				if checkIfKingInCheck(color):
-					# Dann Rochadezug entfernen
+				# Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
+				if isMyKingInCheck(color):
 					legalMovesV4.remove(move)
-					# Ausgangsstellung wiederherstellen
 					board.iloc[7,6] = "--"
 					board.iloc[7,4] = "wk"
-					# Und nächster Zug
 					continue
-				# Wenn König auch nach 2. Königsschritt nicht im Schach
+				# Wenn König auch nach 2. Königsschritt nicht im Schach => Ausgangsstellung wiederherstellen
 				else:
-					# Ausgangsstellung wiederherstellen
 					board.iloc[7,6] = "--"
 					board.iloc[7,4] = "wk"
 					# Wenn bei Rochade der Turm als Zielfeld gewählt wurde, soll das auch dann möglich sein, wenn das Turmfeld bedroht ist
-					# Denn der König steht ja am Ende gar nicht auf dem Turmfeld
-					# Ohne continue würde das abgelehnt werden, weil dann danach gerpüft wird, ob Turmfeld im Schach steht
+					# Ohne continue würde der Zug im Anshcluss removed werden, weil dann geprüft wird, ob Turmfeld im Schach steht
 					if move == [7,7]: continue
 
 		# lange Rochade weiß
 		if piece == "wk" and board.iloc[7,4] == "wk" and move in [[7,2],[7,0]]:
 			board.iloc[7,4] = "--"
 			board.iloc[7,3] = "wk"
-			if checkIfKingInCheck(color):
+			if isMyKingInCheck(color):
 				legalMovesV4.remove(move)
 				board.iloc[7,3] = "--"
 				board.iloc[7,4] = "wk"
@@ -276,7 +248,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql) -> list:
 			else:
 				board.iloc[7,3] = "--"
 				board.iloc[7,2] = "wk"
-				if checkIfKingInCheck(color):
+				if isMyKingInCheck(color):
 					legalMovesV4.remove(move)
 					board.iloc[7,2] = "--"
 					board.iloc[7,4] = "wk"
@@ -290,7 +262,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql) -> list:
 		if piece == "bk" and board.iloc[0,4] == "bk" and move in [[0,6],[0,7]]:
 			board.iloc[0,4] = "--"
 			board.iloc[0,5] = "bk"
-			if checkIfKingInCheck(color):
+			if isMyKingInCheck(color):
 				legalMovesV4.remove(move)
 				board.iloc[0,5] = "--"
 				board.iloc[0,4] = "bk"
@@ -298,7 +270,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql) -> list:
 			else:
 				board.iloc[0,5] = "--"
 				board.iloc[0,6] = "bk"
-				if checkIfKingInCheck(color):
+				if isMyKingInCheck(color):
 					legalMovesV4.remove(move)
 					board.iloc[0,6] = "--"
 					board.iloc[0,4] = "bk"
@@ -312,7 +284,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql) -> list:
 		if piece == "bk" and board.iloc[0,4] == "bk" and move in [[0,2],[0,0]]:
 			board.iloc[0,4] = "--"
 			board.iloc[0,3] = "bk"
-			if checkIfKingInCheck(color):
+			if isMyKingInCheck(color):
 				legalMovesV4.remove(move)
 				board.iloc[0,3] = "--"
 				board.iloc[0,4] = "bk"
@@ -320,7 +292,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql) -> list:
 			else:
 				board.iloc[0,3] = "--"
 				board.iloc[0,2] = "bk"
-				if checkIfKingInCheck(color):
+				if isMyKingInCheck(color):
 					legalMovesV4.remove(move)
 					board.iloc[0,2] = "--"
 					board.iloc[0,4] = "bk"
@@ -338,7 +310,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql) -> list:
 		board.iloc[move[0],move[1]] = piece
 
 		# Wenn mein König nach dem getesteten legalMove im Schach steht, wird dieser Zug entfernt
-		if checkIfKingInCheck(color):
+		if isMyKingInCheck(color):
 			legalMovesV4.remove(move)
 
 		# Nach der Prüfung wird der Zug wieder zurückgenommen (Zielfeld = die Figur, die vorher da stand und Quellfeld = die gewählte Figur)
@@ -357,38 +329,33 @@ def checkLegalMovesWhitePawn(legalMovesV1,sqr,sql,capturableEnPassant) -> list:
 		legalMovesV1.append([sqr-2,sql])
 	# Wenn Bauer in 5. Reihe und links bzw. rechts neben mir ein gegnerischer Bauer steht
 	# der gerade einen Doppelschritt gegangen ist => füge Zug hinzu
-	elif sqr == 3:
-		if sql != 0 and capturableEnPassant == [sqr,sql-1]:
-			legalMovesV1.append([sqr-1,sql-1])
-		if sql != 7 and capturableEnPassant == [sqr,sql+1]:
-			legalMovesV1.append([sqr-1,sql+1])
+	elif sqr == 3 and sql != 0 and capturableEnPassant == [sqr,sql-1]:
+		legalMovesV1.append([sqr-1,sql-1])
+	elif sqr == 3 and sql != 7 and capturableEnPassant == [sqr,sql+1]:
+		legalMovesV1.append([sqr-1,sql+1])
+	# Immer und unabhängig von Reihe: Feld davor frei? Schlagzug nach links/rechts möglich?
 	if board.iloc[sqr-1,sql] == "--":
 		legalMovesV1.append([sqr-1,sql])
 	if sql != 0 and board.iloc[sqr-1,sql-1].startswith("b"):
 		legalMovesV1.append([sqr-1,sql-1])
 	if sql != 7 and board.iloc[sqr-1,sql+1].startswith("b"):
 		legalMovesV1.append([sqr-1,sql+1])
-
 	return legalMovesV1
 
 
 def checkLegalMovesBlackPawn(legalMovesV1,sqr,sql,capturableEnPassant) -> list:
 	if sqr == 1 and board.iloc[sqr+1,sql] == "--" and board.iloc[sqr+2,sql] == "--":
-		legalMovesV1.append([sqr+2,sql])
-			
-	elif sqr == 4:
-		if sql != 7 and capturableEnPassant == [sqr,sql+1]:
-			legalMovesV1.append([sqr+1,sql+1])
-		if sql != 0 and capturableEnPassant == [sqr,sql-1]:
-			legalMovesV1.append([sqr+1,sql-1])
-
+		legalMovesV1.append([sqr+2,sql])			
+	elif sqr == 4 and sql != 7 and capturableEnPassant == [sqr,sql+1]:
+		legalMovesV1.append([sqr+1,sql+1])
+	elif sqr == 4 and sql != 0 and capturableEnPassant == [sqr,sql-1]:
+		legalMovesV1.append([sqr+1,sql-1])
 	if board.iloc[sqr+1,sql] == "--":
 		legalMovesV1.append([sqr+1,sql])
 	if sql != 7 and board.iloc[sqr+1,sql+1].startswith("w"):
 		legalMovesV1.append([sqr+1,sql+1])		
 	if sql != 0 and board.iloc[sqr+1,sql-1].startswith("w"):
 		legalMovesV1.append([sqr+1,sql-1])
-
 	return legalMovesV1
 
 
@@ -399,11 +366,9 @@ def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sqr,sql) -> list:
 
 			# Default-Werte von 10 sorgen später für Abbruch der step-Loop, wenn kein legaler Schritt (von 1-7) gefunden wird
 			# Wenn z.B. bei Turm die directions 5-8 oder bei Läufer die directions 1-4 dran sind, soll break folgen
-			stepRank = 10
-			stepLine = 10
-
-			# Turm oder Dame
-			if piece.endswith("r") or piece.endswith("q"):
+			stepRank, stepLine = 10, 10
+			
+			if piece.endswith("r") or piece.endswith("q"): # Turm oder Dame
 				# Je nach Richtung werden die Indizes definiert
 				# 1 = vorne, 2 = hinten, 3 = rechts, 4 = links
 				if direction == 1:
@@ -418,9 +383,8 @@ def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sqr,sql) -> list:
 				elif direction == 4:
 					stepRank = 0
 					stepLine = step * -1
-
-			# Läufer oder Dame
-			if piece.endswith("b") or piece.endswith("q"):
+			
+			if piece.endswith("b") or piece.endswith("q"): # Läufer oder Dame
 				# Je nach Richtung werden die Indizes definiert
 				# 5 = vorne rechts, 6 = hinten links, 7 = hinten rechts, 8 = vorne links
 				if direction == 5:
@@ -436,7 +400,7 @@ def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sqr,sql) -> list:
 					stepRank = step * -1
 					stepLine = step * -1
 
-			# Wenn Index außerhalb des Feldes (es werden bis zu 7 Schritte in jede Richtung geprüft) => prüfe nächste Richtung (direction)
+			# Wenn Index außerhalb des Feldes (max. 7 Schritte pro Richtung geprüft) => prüfe nächste Richtung (direction)
 			if not ((0 <= sqr+stepRank <= 7) and (0 <= sql+stepLine <= 7)): break
 
 			# Wenn eigene Figur im Weg => prüfe nächste Richtung (direction)
@@ -458,48 +422,31 @@ def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sqr,sql) -> list:
 def checkLegalMovesKnight(piece,legalMovesV1,sqr,sql) -> list:
 	# Ein Springer kann max. 8 Felder betreten
 	for direction in range(1,9):
-		stepRank = 10
-		stepLine = 10
-		# Oben oben rechts
-		if direction == 1:
-			stepRank = -2
-			stepLine = +1
-		# Oben rechts rechts
-		elif direction == 2:
-			stepRank = -1
-			stepLine = +2
-		# Unten rechts rechts
-		elif direction == 3:
-			stepRank = +1
-			stepLine = +2
-		# Unten unten rechts
-		elif direction == 4:
-			stepRank = +2
-			stepLine = +1
-		# Unten unten links
-		elif direction == 5:
-			stepRank = +2
-			stepLine = -1
-		# Unten links links
-		elif direction == 6:
-			stepRank = +1
-			stepLine = -2
-		# Oben links links
-		elif direction == 7:
-			stepRank = -1
-			stepLine = -2
-		# Oben oben links
-		elif direction == 8:
-			stepRank = -2
-			stepLine = -1
+		stepRank, stepLine = 10, 10		
+		if direction == 1:   # Oben oben rechts
+			stepRank, stepLine = -2, +1		
+		elif direction == 2: # Oben rechts rechts
+			stepRank, stepLine = -1, +2		
+		elif direction == 3: # Unten rechts rechts
+			stepRank, stepLine = +1, +2		
+		elif direction == 4: # Unten unten rechts
+			stepRank, stepLine = +2, +1		
+		elif direction == 5: # Unten unten links
+			stepRank, stepLine = +2, -1		
+		elif direction == 6: # Unten links links
+			stepRank, stepLine = +1, -2		
+		elif direction == 7: # Oben links links
+			stepRank, stepLine = -1, -2		
+		elif direction == 8: # Oben oben links
+			stepRank, stepLine = -2, -1
 
-		# Wenn Index außerhalb des Feldes (es wird bis zu 1 Schritt in jede Richtung geprüft) => prüfe nächste Richtung (direction)
+		# Wenn Index außerhalb des Feldes (max. 7 Schritte pro Richtung geprüft) => prüfe nächste Richtung (direction)
 		if not ((0 <= sqr+stepRank <= 7) and (0 <= sql+stepLine <= 7)): continue
 
-		# Wenn eigene Figur auf dem Feld => prüfe nächste Richtung (direction)
+		# Wenn eigene Figur im Weg => prüfe nächste Richtung (direction)
 		if board.iloc[sqr+stepRank,sql+stepLine].startswith(piece[0]): continue
 
-		# Wenn Gegner auf dem Feld => füge Zug hinzu => prüfe nächste Richtung (direction)
+		# Wenn Gegner im Weg => füge Zug hinzu => prüfe nächste Richtung (direction)
 		if board.iloc[sqr+stepRank,sql+stepLine].startswith(otherColor[piece[0]]):
 			legalMovesV1.append([sqr+stepRank,sql+stepLine])
 			continue
@@ -515,40 +462,23 @@ def checkLegalMovesKnight(piece,legalMovesV1,sqr,sql) -> list:
 def checkLegalMovesKing(piece,legalMovesV1,sqr,sql) -> list:
 	# Ein König kann max. 8 Felder betreten
 	for direction in range(1,9):
-		stepRank = 10
-		stepLine = 10
-		# oben
-		if direction == 1:
-			stepRank = -1
-			stepLine = 0
-		# oben rechts
-		elif direction == 2:
-			stepRank = -1
-			stepLine = +1
-		# rechts
-		elif direction == 3:
-			stepRank = 0
-			stepLine = +1
-		# unten rechts
-		elif direction == 4:
-			stepRank = +1
-			stepLine = +1
-		# unten
-		elif direction == 5:
-			stepRank = +1
-			stepLine = 0
-		# unten links
-		elif direction == 6:
-			stepRank = +1
-			stepLine = -1
-		# links
-		elif direction == 7:
-			stepRank = 0
-			stepLine = -1
-		# oben links
-		elif direction == 8:
-			stepRank = -1
-			stepLine = -1
+		stepRank, stepLine = 10, 10		
+		if direction == 1:   # oben
+			stepRank, stepLine = -1, 0		
+		elif direction == 2: # oben rechts
+			stepRank, stepLine = -1, +1		
+		elif direction == 3: # rechts
+			stepRank, stepLine = 0, +1		
+		elif direction == 4: # unten rechts
+			stepRank, stepLine = +1, +1		
+		elif direction == 5: # unten
+			stepRank, stepLine = +1, 0		
+		elif direction == 6: # unten links
+			stepRank, stepLine = +1, -1		
+		elif direction == 7: # links
+			stepRank, stepLine = 0, -1		
+		elif direction == 8: # oben links
+			stepRank, stepLine = -1, -1
 
 		# Wenn Index außerhalb des Feldes (es werden bis zu 2 Schritte in jede Richtung geprüft) => prüfe nächste Richtung (direction)
 		if not ((0 <= sqr+stepRank <= 7) and (0 <= sql+stepLine <= 7)): continue
@@ -587,39 +517,35 @@ def promote(piece,tsr,playerWhite,playerBlack) -> tuple:
 
 
 def move(piece,shortCastleRight,longCastleRight,sqr,sql,tsr,tsl,capturableEnPassant) -> bool:
-
 	hasTakenPiece = False
 
-	# kurze Rochade weiß
+	# kurze Rochade weiß / lange Rochade weiß / kurze Rochade schwarz / lange Rochade schwarz
 	if piece == "wk" and shortCastleRight and (tsl == 6 or tsl == 7):
 		board.iloc[7,4] = "--"
 		board.iloc[7,6] = "wk"
 		board.iloc[7,7] = "--"
 		board.iloc[7,5] = "wr"
 
-	# lange Rochade weiß
 	elif piece == "wk" and longCastleRight and (tsl == 0 or tsl == 2):
 		board.iloc[7,4] = "--"
 		board.iloc[7,2] = "wk"
 		board.iloc[7,0] = "--"
 		board.iloc[7,3] = "wr"
 
-	# kurze Rochade schwarz
 	elif piece == "bk" and shortCastleRight and (tsl == 6 or tsl == 7):
 		board.iloc[0,4] = "--"
 		board.iloc[0,6] = "bk"
 		board.iloc[0,7] = "--"
 		board.iloc[0,5] = "br"
 
-	# lange Rochade schwarz
 	elif piece == "bk" and longCastleRight and (tsl == 0 or tsl == 2):
 		board.iloc[0,4] = "--"
 		board.iloc[0,2] = "bk"
 		board.iloc[0,0] = "--"
 		board.iloc[0,3] = "br"
 
+	# Jeder Zug, der keine Rochade ist. Altes Feld räumen, neues Feld mit gezogener Figur besetzen
 	else:
-		# Jeder Zug, der keine Rochade ist. Altes Feld räumen, neues Feld mit gezogener Figur besetzen
 		board.iloc[sqr,sql] = "--"
 		board.iloc[tsr,tsl] = piece
 
@@ -655,13 +581,10 @@ def attackedByOpponent(dangerFields,color,piece) -> bool:
 
 
 def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
-
-	# Prinzip der Funktion:
 	# Vom Standpunkt des Königs werden Bauern/Springer/Läufer/Turm/Damen/Königszüge gegangen (dangerFields)
-	# Wenn in solch einem Feld die jeweilige gegnerische Figur steht => Figur angegriffen => return True; sonst return False
+	# Wenn in solch einem Feld die jeweilige gegnerische Figur steht => König angegriffen => return True; sonst return False
 
-	# Bauer
-	piece = color[0].lower()+"p"
+	piece = color[0].lower()+"p" # Bauer
 	dangerFields = []
 
 	if piece == "wp":
@@ -669,55 +592,41 @@ def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
 		if ((0 <= mySquareRank-1 <= 7) and (0 <= mySquareLine-1 <= 7)):
 			# dann wird Feld gespeichert und später geprüft, ob da gegn. Bauer steht
 			dangerFields.append([mySquareRank-1,mySquareLine-1])
-
 		# rechts oben
 		if ((0 <= mySquareRank-1 <= 7) and (0 <= mySquareLine+1 <= 7)):
 			dangerFields.append([mySquareRank-1,mySquareLine+1])
-
 	if piece == "bp":
 		# links oben (aus Perspektive von schwarz)
 		if ((0 <= mySquareRank+1 <= 7) and (0 <= mySquareLine+1 <= 7)):
 			dangerFields.append([mySquareRank+1,mySquareLine+1])
-
 		# rechts oben (aus Perspektive von schwarz)
 		if ((0 <= mySquareRank+1 <= 7) and (0 <= mySquareLine-1 <= 7)):
 			dangerFields.append([mySquareRank+1,mySquareLine-1])
-
 	if attackedByOpponent(dangerFields,color,piece): return True
 
-	# Turm
-	piece = color[0].lower()+"r"
+	piece = color[0].lower()+"r" # Turm
 	dangerFields = []
 	dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,mySquareRank,mySquareLine)
-
 	if attackedByOpponent(dangerFields,color,piece): return True
 
-	# Läufer
-	piece = color[0].lower()+"b"
+	piece = color[0].lower()+"b" # Läufer
 	dangerFields = []
-	dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,mySquareRank,mySquareLine)
-	
+	dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,mySquareRank,mySquareLine)	
 	if attackedByOpponent(dangerFields,color,piece): return True
 
-	# Dame
-	piece = color[0].lower()+"q"
+	piece = color[0].lower()+"q" # Dame
 	dangerFields = []
-	dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,mySquareRank,mySquareLine)
-	
+	dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,mySquareRank,mySquareLine)	
 	if attackedByOpponent(dangerFields,color,piece): return True
 
-	# Springer
-	piece = color[0].lower()+"n"
+	piece = color[0].lower()+"n" # Springer
 	dangerFields = []
 	dangerFields = checkLegalMovesKnight(piece,dangerFields,mySquareRank,mySquareLine)
-
 	if attackedByOpponent(dangerFields,color,piece): return True
 
-	# König
-	piece = color[0].lower()+"k"
+	piece = color[0].lower()+"k" # König
 	dangerFields = []
 	dangerFields = checkLegalMovesKing(piece,dangerFields,mySquareRank,mySquareLine)
-
 	if attackedByOpponent(dangerFields,color,piece): return True
 
 	return False
@@ -736,24 +645,20 @@ def selectPlayerType(playerColor) -> str:
 
 
 def startGame():
-	# Zughstorie / Bauern, die der Ziehende enPassant schlagen kann / vom Gegner kontrollierte Felder / Weiß beginnt
+	# Zughstorie / Bauern, die der Ziehende enPassant schlagen kann / Weiß beginnt
 	moveHistory 		= []
 	capturableEnPassant = []
 	color 				= "White"
 
 	print("\nWelcome to my chess game!")
-
-	# playerWhite = selectPlayerType("White")
-	# playerBlack = selectPlayerType("Black")
-	playerWhite = "human"
-	playerBlack = "human"
-
+	playerWhite = selectPlayerType("White")
+	playerBlack = selectPlayerType("Black")
 	print(board)
 
 	while True:
-		# Vor jedem Zug Schachgebot auf eigenen König prüfen / Vor jedem Zug Remis- oder Mattstellung prüfen
-		isMyKingInCheck = checkIfKingInCheck(color)
-		checkDrawCheckmate(color,moveHistory,boardCompositions,isMyKingInCheck,capturableEnPassant)
+		# Vor jedem Zug prüfen: Mein König im Schach? Remisstellung? Mattstellung?
+		myKingInCheck = isMyKingInCheck(color)
+		checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,capturableEnPassant)
 
 		print("\n"+color+" to move:")
 		while True:
@@ -765,8 +670,8 @@ def startGame():
 			# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 2. Zeichen 1-8
 			if len(sourceSquare) != 2 or sourceSquare[0] not in LETTERS or sourceSquare[1] not in NUMBERS: continue
 
-			# Definition Funktionsparameter
-			piece 				= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur auf "From"-Feld, z.B. "wp" oder "bp"s
+			# Definition Funktionsparameter: sourceSquareRank / sourceSquareLines
+			piece 	= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur auf "From"-Feld, z.B. "wp" oder "bp"s
 			sqr 	= int(NUMBERS.index(sourceSquare[1]))			# Zahl/Reihe in Indexform [0-7]
 			sql 	= int(LETTERS.index(sourceSquare[0]))			# Buchstabe/Linie in Indexform [0-7]
 
@@ -778,13 +683,13 @@ def startGame():
 			legalMovesV1 		= checkLegalMovesV1(piece,legalMovesV1,sqr,sql,capturableEnPassant)	
 			legalMovesV1,\
 			shortCastleRight,\
-			longCastleRight 	= checkCastleMovesV1(color,isMyKingInCheck,piece,legalMovesV1,moveHistory)
+			longCastleRight 	= checkCastleMovesV1(color,myKingInCheck,piece,legalMovesV1,moveHistory)
 			legalMovesV3 		= []
 			legalMovesV2 		= checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql)
 
 			# Weiter gehts nur, wenn legaler Zug mit der Figur möglich, sonst Wdh. Eingabe (break)
 			if legalMovesV2:
-				# Bei Maschine wird gewähltes Feld jetzt ausgegeben, also erst nachdem legales Feld gefunden wurde
+				# Bei Engine wird gewähltes Feld jetzt ausgegeben, also erst nachdem legales Feld gefunden wurde
 				if (playerWhite == "engine" and color == "White") or (playerBlack == "engine" and color == "Black"):
 					print("From:",sourceSquare)
 				break
@@ -798,14 +703,14 @@ def startGame():
 			# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 1. Zeichen 1-8
 			if len(targetSquare) != 2 or targetSquare[0] not in LETTERS or targetSquare[1] not in NUMBERS: continue
 
-			# Defintion Prüfparameter
+			# Defintion Prüfparameter: targetSquareRank / targetSquareLine
 			tsr 	= int(NUMBERS.index(targetSquare[1]))
 			tsl 	= int(LETTERS.index(targetSquare[0]))
 
 			# Wiederholung Eingabe, wenn Zielfeld nicht legal
 			if [tsr,tsl] not in legalMovesV2: continue
 
-			# Bei Maschine wird gewähltes Feld jetzt ausgegeben, also erst nachdem legales Feld gefunden wurde
+			# Bei Engine wird gewähltes Feld jetzt ausgegeben, also erst nachdem legales Feld gefunden wurde
 			if (playerWhite == "engine" and color == "White") or (playerBlack == "engine" and color == "Black"):
 				print("To:",targetSquare)
 
@@ -814,18 +719,12 @@ def startGame():
 			hasTakenPiece 		= move(piece,shortCastleRight,longCastleRight,sqr,sql,tsr,tsl,capturableEnPassant)
 			capturableEnPassant = checkIfWeDoubleSteppedPawn(piece,sqr,tsr,tsl)
 			moveHistory.append([piece,sourceSquare,targetSquare,hasTakenPiece,promotion])
-
 			break
 
 		print()
 		print(board)
-
-		# Farbe wechseln
-		color = "White" if color == "Black" else "Black"
-
-		# board = flipBoard(color,board.values.tolist())
-		# time.sleep(1)
-		# print(board)
+		
+		color = "White" if color == "Black" else "Black" # Farbe wechseln
 
 if __name__=="__main__":
 	startGame()
