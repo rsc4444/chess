@@ -334,7 +334,7 @@ def checkLegalMovesWhitePawn(legalMovesV1,sqr,sql,capturableEnPassant) -> list:
 
 def checkLegalMovesBlackPawn(legalMovesV1,sqr,sql,capturableEnPassant) -> list:
 	if sqr == 1 and board.iloc[sqr+1,sql] == "--" and board.iloc[sqr+2,sql] == "--":
-		legalMovesV1.append([sqr+2,sql])			
+		legalMovesV1.append([sqr+2,sql])
 	elif sqr == 4 and sql != 7 and capturableEnPassant == [sqr,sql+1]:
 		legalMovesV1.append([sqr+1,sql+1])
 	elif sqr == 4 and sql != 0 and capturableEnPassant == [sqr,sql-1]:
@@ -358,7 +358,6 @@ def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sqr,sql) -> list:
 			stepRank, stepLine = 10, 10
 			
 			if piece.endswith("r") or piece.endswith("q"): # Turm oder Dame
-				# 1 = vorne, 2 = hinten, 3 = rechts, 4 = links
 				if direction == 1:   # vorne
 					stepRank, stepLine = step*-1, 0
 				elif direction == 2: # hinten
@@ -398,25 +397,25 @@ def checkLegalMovesKnightKing(piece,legalMovesV1,sqr,sql) -> list:
 	for direction in range(1,9):
 		stepRank, stepLine = 10, 10
 
-		if piece.endswith("n"): # Springer
+		if piece.endswith("n"):  # Springer
 			if direction == 1:   # oben oben rechts
-				stepRank, stepLine = -2, +1		
+				stepRank, stepLine = -2, +1
 			elif direction == 2: # oben rechts rechts
-				stepRank, stepLine = -1, +2		
+				stepRank, stepLine = -1, +2
 			elif direction == 3: # unten rechts rechts
-				stepRank, stepLine = +1, +2		
+				stepRank, stepLine = +1, +2
 			elif direction == 4: # unten unten rechts
-				stepRank, stepLine = +2, +1		
+				stepRank, stepLine = +2, +1
 			elif direction == 5: # unten unten links
-				stepRank, stepLine = +2, -1		
+				stepRank, stepLine = +2, -1
 			elif direction == 6: # unten links links
-				stepRank, stepLine = +1, -2		
+				stepRank, stepLine = +1, -2
 			elif direction == 7: # oben links links
-				stepRank, stepLine = -1, -2		
+				stepRank, stepLine = -1, -2
 			elif direction == 8: # oben oben links
 				stepRank, stepLine = -2, -1
 
-		if piece.endswith("k"): # König
+		if piece.endswith("k"):  # König
 			if direction == 1:   # oben
 				stepRank, stepLine = -1, 0
 			elif direction == 2: # oben rechts
