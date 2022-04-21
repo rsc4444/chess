@@ -493,11 +493,8 @@ def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
 def selectPlayerType(playerColor) -> str:
 	while True:
 		playerType = input(f"\nplayer {playerColor}:\n h (human) \n e (engine)\n\n")
-		return "human" if playerType == "h" else "engine"
-		# if playerType == "h":
-		# 	return "human"
-		# elif playerType == "e":
-		# 	return "engine"s
+		if playerType == "h": return "human"
+		elif playerType == "e": return "engine"
 
 
 def startGame():
