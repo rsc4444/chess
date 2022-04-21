@@ -493,10 +493,11 @@ def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
 def selectPlayerType(playerColor) -> str:
 	while True:
 		playerType = input(f"\nplayer {playerColor}:\n h (human) \n e (engine)\n\n")
-		if playerType == "h":
-			return "human"
-		elif playerType == "e":
-			return "engine"
+		return "human" if playerType == "h" else "engine"
+		# if playerType == "h":
+		# 	return "human"
+		# elif playerType == "e":
+		# 	return "engine"s
 
 
 def startGame():
@@ -506,10 +507,10 @@ def startGame():
 	color 				= "White"
 
 	print("\nWelcome to my chess game!")
-	# playerWhite = selectPlayerType("White")
-	# playerBlack = selectPlayerType("Black")
-	playerWhite = "human"
-	playerBlack = "human"
+	playerWhite = selectPlayerType("White")
+	playerBlack = selectPlayerType("Black")
+	# playerWhite = "human"
+	# playerBlack = "human"
 	print(board)
 
 	while True:
