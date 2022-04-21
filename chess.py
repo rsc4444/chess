@@ -5,13 +5,6 @@ import sys
 import time
 
 # ====================================================================================================
-# ToDo
-# ====================================================================================================
-
-# Vorschläge von Thomas prüfen
-# color aus FUnktionen raus, in denen auch piece übergeben wird
-
-# ====================================================================================================
 # KONSTANTEN + Variablen
 # ====================================================================================================
 
@@ -79,12 +72,10 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,captura
 				legalMovesV1 = checkLegalMovesV1(piece,legalMovesV1,sqr,sql,capturableEnPassant)
 				legalMovesV2 = checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql)
 
-	# Mindestens 50 Züge in Folge kein Bauern- oder Schlagzug => Unentschieden.
+	# Mindestens 50 Züge in Folge kein Bauern- oder Schlagzug oder Umwandlung=> Unentschieden.
 	if len(moveHistory) >= (2*50):
 		fiftyMovesDraw = True
-		# Gehe letzte 50 Züge durch
 		for i in range(len(moveHistory),len(moveHistory)-(2*50),-1):
-			# Wenn Bauernzug oder Schlagzug oder Umwandlung => kein Unentschieden.
 			if (moveHistory[i-1][0][1] == "p") or moveHistory[i-1][3] or moveHistory[i-1][4]:
 				fiftyMovesDraw = False
 				break
@@ -93,12 +84,10 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,captura
 	if (totalValuePieces <= 3) or (lightSquaredBishops * 3 == totalValuePieces) or (darkSquaredBishops * 3 == totalValuePieces):
 		sys.exit("\nNot enough mating material! This is a draw.\n")
 
-	# Wenn keine legalen Züge...
+	# Wenn keine legalen Züge... und König nicht im Schach => Patt ...und König im Schach => Matt
 	if not legalMovesV2:
-		# ...aber König nicht im Schach => Patt
 		if not myKingInCheck:
 			sys.exit("\nStalemate! This is a draw.\n")
-		# ...und König im Schach => Matt
 		if myKingInCheck:
 			color = "White" if color == "Black" else "Black"
 			sys.exit("\nCheckmate! "+color+" wins.\n")
@@ -108,19 +97,18 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,captura
 
 
 def isMyKingInCheck(color) -> bool:
-	# Iteration über das Brett. Feld mit eigenem König wird gesucht
+	# Iteration über das Brett. Wenn eigener König gefunden => prüfe, ob dieser im Schach steht (return True/False)
 	for sqr in range(8):
 		for sql in range(8):
-			# Wenn eigener König gefunden => prüfe, ob dieser im Schach steht (return True/False)
 			if board.iloc[sqr,sql] == selfColor(color)+"k":
 				return isUnderAttack(color,sqr,sql)
 
 
 def checkShortCastleRight(piece,moveHistory) -> bool:
 	backRank = "1" if piece.startswith("w") else "8"
-	# Wenn König und Turm auf Ausgangsfeld stehen und Felder dazwischen frei => Rochade bis jetzt möglich
+	# Wenn König und Turm auf Ausgangsfeld stehen und Felder dazwischen frei => weitermachen
 	if board.loc[backRank,"e"]==piece[0]+"k" and board.loc[backRank,"f"]=="--" and board.loc[backRank,"g"]=="--" and board.loc[backRank,"h"]==piece[0]+"r":
-		# Wenn König oder Turm schon bewegt wurden => Rochade nicht möglich, sonst schon
+		# Wenn König oder Turm schon bewegt wurden => Rochade nicht möglich, sonst (vorerst) möglich
 		for move in moveHistory:
 			if move[1]=="e"+backRank or move[1]=="h"+backRank or move[2]=="h"+backRank:
 				return False
@@ -182,7 +170,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql) -> list:
 	for move in legalMovesV1:
 		# Beide Rochadezüge (man gibt als Zielfeld neues Königsfeld oder Turmfeld an) werden geprüft
 		# Bei beiden Rochadezügen gilt: Die beiden Felder neben König (Zwischenschritt und Zielfeld) dürfen nicht bedroht sein
-		# kurze Rochades
+		# kurze Rochade
 		if piece.endswith("k") and board.iloc[backRank,4] == selfColor(color)+"k" and move in [[backRank,6],[backRank,7]]:
 			# 1. Königsschritt gehen (Zwischenschritt)
 			board.iloc[backRank,4] = "--"
@@ -265,7 +253,7 @@ def checkLegalMovesPawn(piece,legalMovesV1,sqr,sql,capturableEnPassant) -> list:
 		legalMovesV1.append([sqr-1*factor,sql-1*factor])
 	elif sqr == (3-summand)*factor and sql != (7-summand)*factor and capturableEnPassant == [sqr,sql+1*factor]:
 		legalMovesV1.append([sqr-1*factor,sql+1*factor])
-	# Immer und unabhängig von Reihe: Feld davor frei? Schlagzug nach links/rechts möglich?
+	# Immer und unabhängig von Reihe: Feld davor frei? Schlagzug nach links/rechts möglich? => füge Zug hinzu
 	if board.iloc[sqr-1*factor,sql] == "--":
 		legalMovesV1.append([sqr-1*factor,sql])
 	if sql != (0-summand)*factor and board.iloc[sqr-1*factor,sql-1*factor].startswith(otherColor(piece)):
@@ -416,13 +404,10 @@ def move(piece,shortCastleRight,longCastleRight,sqr,sql,tsr,tsl,capturableEnPass
 	if board.iloc[tsr,tsl][0] == otherColor(piece):
 		hasTakenPiece = True
 
+	epRank = 3 if piece.startswith("w") else 4
 	# Wenn enPassant möglich war UND ich weißen Bauer hatte UND ich auf 5. Reihe stand UND Spalte Zielfeld war Spalte gegenerischer Bauer
-	if len(capturableEnPassant) == 2 and  piece == "wp" and sqr == 3 and tsl == capturableEnPassant[1]:
+	if len(capturableEnPassant) == 2 and  piece == piece[0]+"p" and sqr == epRank and tsl == capturableEnPassant[1]:
 		# Dann gegenerischen Bauer eliminieren => Schlagzug
-		board.iloc[capturableEnPassant[0],capturableEnPassant[1]] = "--"
-		hasTakenPiece = True
-
-	if len(capturableEnPassant) == 2 and  piece == "bp" and sqr == 4 and tsl == capturableEnPassant[1]:
 		board.iloc[capturableEnPassant[0],capturableEnPassant[1]] = "--"
 		hasTakenPiece = True
 
@@ -506,8 +491,6 @@ def startGame():
 	print("\nWelcome to my chess game!")
 	playerWhite = selectPlayerType("White")
 	playerBlack = selectPlayerType("Black")
-	# playerWhite = "human"
-	# playerBlack = "human"
 	print(board)
 
 	while True:
