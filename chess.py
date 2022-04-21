@@ -34,7 +34,10 @@ board = pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
 boardCompositions = []
 
 def selfColor(color):
-	return color[0].lower()
+	return "w" if color == "White" else "b"
+
+# def otherColor(color):
+# 	return "w" if color == "Black" else "b"
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
@@ -256,21 +259,20 @@ def checkLegalMovesPawn(piece,legalMovesV1,sqr,sql,capturableEnPassant) -> list:
 	summand = 7 if piece.startswith("b") else 0
 	factor = -1 if piece.startswith("b") else 1
 	# Wenn Bauer in 2. Reihe und beide Felder davor frei => füge Zug hinzu
-	if sqr == (6-summand)*(factor) and board.iloc[sqr-(1*factor),sql] == "--" and board.iloc[sqr-(2*factor),sql] == "--":
-		legalMovesV1.append([sqr-(2*factor),sql])
-	# Wenn Bauer in 5. Reihe und links bzw. rechts neben mir ein gegnerischer Bauer steht
-	# der gerade einen Doppelschritt gegangen ist => füge Zug hinzu
-	elif sqr == (3-summand)*(factor) and sql != (0-summand)*(factor) and capturableEnPassant == [sqr,sql-(1*factor)]:
-		legalMovesV1.append([sqr-(1*factor),sql-(1*factor)])
-	elif sqr == (3-summand)*(factor) and sql != (7-summand)*(factor) and capturableEnPassant == [sqr,sql+(1*factor)]:
-		legalMovesV1.append([sqr-(1*factor),sql+(1*factor)])
+	if sqr == (6-summand)*factor and board.iloc[sqr-1*factor,sql] == "--" and board.iloc[sqr-2*factor,sql] == "--":
+		legalMovesV1.append([sqr-2*factor,sql])
+	# Wenn Bauer in 5. Reihe und links/rechts ein gegn. Bauer steht, der gerade einen Doppelschritt gegangen ist => füge Zug hinzu
+	elif sqr == (3-summand)*factor and sql != (0-summand)*factor and capturableEnPassant == [sqr,sql-1*factor]:
+		legalMovesV1.append([sqr-1*factor,sql-1*factor])
+	elif sqr == (3-summand)*factor and sql != (7-summand)*factor and capturableEnPassant == [sqr,sql+1*factor]:
+		legalMovesV1.append([sqr-1*factor,sql+1*factor])
 	# Immer und unabhängig von Reihe: Feld davor frei? Schlagzug nach links/rechts möglich?
-	if board.iloc[sqr-(1*factor),sql] == "--":
-		legalMovesV1.append([sqr-(1*factor),sql])
-	if sql != (0-summand)*(factor) and board.iloc[sqr-(1*factor),sql-(1*factor)].startswith(otherColor[piece[0]]):
-		legalMovesV1.append([sqr-(1*factor),sql-(1*factor)])
-	if sql != (7-summand)*(factor) and board.iloc[sqr-(1*factor),sql+(1*factor)].startswith(otherColor[piece[0]]):
-		legalMovesV1.append([sqr-(1*factor),sql+(1*factor)])
+	if board.iloc[sqr-1*factor,sql] == "--":
+		legalMovesV1.append([sqr-1*factor,sql])
+	if sql != (0-summand)*factor and board.iloc[sqr-1*factor,sql-1*factor].startswith(otherColor[piece[0]]):
+		legalMovesV1.append([sqr-1*factor,sql-1*factor])
+	if sql != (7-summand)*factor and board.iloc[sqr-1*factor,sql+1*factor].startswith(otherColor[piece[0]]):
+		legalMovesV1.append([sqr-1*factor,sql+1*factor])
 	return legalMovesV1
 
 
@@ -451,11 +453,11 @@ def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
 
 	factor = -1 if color == "Black" else 1
 	# wenn Feld links oben innerhalb Brett => Feld speichern und später prüfen, ob da gegn. Bauer steht
-	if ((0 <= mySquareRank-(1*factor) <= 7) and (0 <= mySquareLine-(1*factor) <= 7)):
-		dangerFields.append([mySquareRank-(1*factor),mySquareLine-(1*factor)])
+	if ((0 <= mySquareRank-1*factor <= 7) and (0 <= mySquareLine-1*factor <= 7)):
+		dangerFields.append([mySquareRank-1*factor,mySquareLine-1*factor])
 	# rechts oben
-	if ((0 <= mySquareRank-(1*factor) <= 7) and (0 <= mySquareLine+(1*factor) <= 7)):
-		dangerFields.append([mySquareRank-(1*factor),mySquareLine+(1*factor)])
+	if ((0 <= mySquareRank-1*factor <= 7) and (0 <= mySquareLine+1*factor <= 7)):
+		dangerFields.append([mySquareRank-1*factor,mySquareLine+1*factor])
 	if attackedByOpponent(dangerFields,color,piece): return True
 
 	piece = selfColor(color)+"r" # Turm
