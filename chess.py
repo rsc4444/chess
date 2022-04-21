@@ -270,7 +270,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql) -> list:
 
 
 
-
+	
 
 
 # NEU
@@ -307,7 +307,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql) -> list:
 # 	if board.iloc[sqr+(1*factor),sql] == "--":
 # 		legalMovesV1.append([sqr+(1*factor),sql])
 # 	if sql != 7 and board.iloc[sqr+(1*factor),sql+(1*factor)].startswith("w"):
-# 		legalMovesV1.append([sqr+(1*factor),sql+(1*factor)])
+# 		legalMovesV1.append([sqr+(1*factor),sql+(1*factor)])		
 # 	if sql != 0 and board.iloc[sqr+(1*factor),sql-(1*factor)].startswith("w"):
 # 		legalMovesV1.append([sqr+(1*factor),sql-(1*factor)])
 # 	return legalMovesV1
@@ -318,50 +318,6 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sqr,sql) -> list:
 
 
 # ALT
-
-def checkLegalMovesWhitePawn(piece,legalMovesV1,sqr,sql,capturableEnPassant) -> list:
-	factor = -1 if piece[0] == "b" else 1
-	# Wenn Bauer in 2. Reihe und beide Felder davor frei => füge Zug hinzu
-	if sqr == 6 and board.iloc[sqr-(1*factor),sql] == "--" and board.iloc[sqr-(2*factor),sql] == "--":
-		legalMovesV1.append([sqr-(2*factor),sql])
-	# Wenn Bauer in 5. Reihe und links bzw. rechts neben mir ein gegnerischer Bauer steht
-	# der gerade einen Doppelschritt gegangen ist => füge Zug hinzu
-	elif sqr == 3 and sql != 0 and capturableEnPassant == [sqr,sql-(1*factor)]:
-		legalMovesV1.append([sqr-(1*factor),sql-(1*factor)])
-	elif sqr == 3 and sql != 7 and capturableEnPassant == [sqr,sql+(1*factor)]:
-		legalMovesV1.append([sqr-(1*factor),sql+(1*factor)])
-	# Immer und unabhängig von Reihe: Feld davor frei? Schlagzug nach links/rechts möglich?
-	if board.iloc[sqr-(1*factor),sql] == "--":
-		legalMovesV1.append([sqr-(1*factor),sql])
-	if sql != 0 and board.iloc[sqr-(1*factor),sql-(1*factor)].startswith("b"):
-		legalMovesV1.append([sqr-(1*factor),sql-(1*factor)])
-	if sql != 7 and board.iloc[sqr-(1*factor),sql+(1*factor)].startswith("b"):
-		legalMovesV1.append([sqr-(1*factor),sql+(1*factor)])
-	return legalMovesV1
-	
-	
-def checkLegalMovesBlackPawn(piece,legalMovesV1,sqr,sql,capturableEnPassant) -> list:
-	factor = -1 if piece[0] == "b" else 1
-	if sqr == 1 and board.iloc[sqr+(1*factor),sql] == "--" and board.iloc[sqr+(2*factor),sql] == "--":
-		legalMovesV1.append([sqr+(2*factor),sql])
-	elif sqr == 4 and sql != 7 and capturableEnPassant == [sqr,sql+(1*factor)]:
-		legalMovesV1.append([sqr+(1*factor),sql+(1*factor)])
-	elif sqr == 4 and sql != 0 and capturableEnPassant == [sqr,sql-(1*factor)]:
-		legalMovesV1.append([sqr+(1*factor),sql-(1*factor)])
-	if board.iloc[sqr+(1*factor),sql] == "--":
-		legalMovesV1.append([sqr+(1*factor),sql])
-	if sql != 7 and board.iloc[sqr+(1*factor),sql+(1*factor)].startswith("w"):
-		legalMovesV1.append([sqr+(1*factor),sql+(1*factor)])		
-	if sql != 0 and board.iloc[sqr+(1*factor),sql-(1*factor)].startswith("w"):
-		legalMovesV1.append([sqr+(1*factor),sql-(1*factor)])
-	return legalMovesV1
-
-
-
-
-
-
-
 
 def checkLegalMovesWhitePawn(piece,legalMovesV1,sqr,sql,capturableEnPassant) -> list:
 	factor = -1 if piece[0] == "b" else 1
