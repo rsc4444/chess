@@ -19,6 +19,17 @@ board = [
 ["wr","wn","wb","wq","wk","wb","wn","wr"],
 ]
 
+# board = [
+# ["--","--","--","--","bk","--","--","--"],
+# ["--","--","--","--","--","--","--","--"],
+# ["--","--","--","--","--","--","--","--"],
+# ["--","--","wn","--","--","--","--","--"],
+# ["--","--","--","--","--","--","--","--"],
+# ["--","--","--","--","--","wq","--","--"],
+# ["--","--","--","--","--","--","--","--"],
+# ["wk","--","--","--","..","--","--","--"],
+# ]
+
 LETTERS 		= ("a","b","c","d","e","f","g","h")
 NUMBERS 		= ("8","7","6","5","4","3","2","1")
 
@@ -436,39 +447,23 @@ def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
 	dangerFields = []
 
 	factor = -1 if color == "Black" else 1
-	# wenn Feld links oben innerhalb Brett => Feld speichern und später prüfen, ob da gegn. Bauer steht
+
+	# wenn Feld links oben bzw. rechts oben innerhalb Brett => Feld speichern und später prüfen, ob da gegn. Bauer steht
 	if ((0 <= mySquareRank-1*factor <= 7) and (0 <= mySquareLine-1*factor <= 7)):
 		dangerFields.append([mySquareRank-1*factor,mySquareLine-1*factor])
-	# rechts oben
 	if ((0 <= mySquareRank-1*factor <= 7) and (0 <= mySquareLine+1*factor <= 7)):
 		dangerFields.append([mySquareRank-1*factor,mySquareLine+1*factor])
 	if attackedByOpponent(dangerFields,piece): return True
 
-	piece = selfColor(color)+"r" # Turm
-	dangerFields = []
-	dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,mySquareRank,mySquareLine)
-	if attackedByOpponent(dangerFields,piece): return True
-
-	piece = selfColor(color)+"b" # Läufer
-	dangerFields = []
-	dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,mySquareRank,mySquareLine)	
-	if attackedByOpponent(dangerFields,piece): return True
-
-	piece = selfColor(color)+"q" # Dame
-	dangerFields = []
-	dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,mySquareRank,mySquareLine)	
-	if attackedByOpponent(dangerFields,piece): return True
-
-	piece = selfColor(color)+"n" # Springer
-	dangerFields = []
-	dangerFields = checkLegalMovesKnightKing(piece,dangerFields,mySquareRank,mySquareLine)
-	if attackedByOpponent(dangerFields,piece): return True
-
-	piece = selfColor(color)+"k" # König
-	dangerFields = []
-	dangerFields = checkLegalMovesKnightKing(piece,dangerFields,mySquareRank,mySquareLine)
-	if attackedByOpponent(dangerFields,piece): return True
-
+	for shortcut in ["r","b","q","n","k"]:  # Turm / Läufer / Dame / Springer / König
+		piece = selfColor(color)+shortcut
+		dangerFields = []
+		if shortcut in ["r","b","q"]:
+			dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,mySquareRank,mySquareLine)
+		elif shortcut in ["n","k"]:
+			dangerFields = checkLegalMovesKnightKing(piece,dangerFields,mySquareRank,mySquareLine)
+		if attackedByOpponent(dangerFields,piece): return True
+		
 	return False
 
 # ====================================================================================================
@@ -487,10 +482,13 @@ def startGame():
 	moveHistory 		= []
 	capturableEnPassant = []
 	color 				= "White"
+	# color 				= "Black"
 
 	print("\nWelcome to my chess game!")
-	playerWhite = selectPlayerType("White")
-	playerBlack = selectPlayerType("Black")
+	# playerWhite = selectPlayerType("White")
+	# playerBlack = selectPlayerType("Black")
+	playerWhite = "human"
+	playerBlack = "human"
 	print(board)
 
 	while True:
