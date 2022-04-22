@@ -2,7 +2,6 @@ import copy
 import pandas as pd
 import random
 import sys
-import time
 
 # ====================================================================================================
 # KONSTANTEN + Variablen
@@ -18,17 +17,6 @@ board = [
 ["wp","wp","wp","wp","wp","wp","wp","wp"],
 ["wr","wn","wb","wq","wk","wb","wn","wr"],
 ]
-
-# board = [
-# ["--","--","--","--","bk","--","--","--"],
-# ["--","--","--","--","--","--","--","--"],
-# ["--","--","--","--","--","--","--","--"],
-# ["--","--","wn","--","--","--","--","--"],
-# ["--","--","--","--","--","--","--","--"],
-# ["--","--","--","--","--","wq","--","--"],
-# ["--","--","--","--","--","--","--","--"],
-# ["wk","--","--","--","..","--","--","--"],
-# ]
 
 LETTERS 		= ("a","b","c","d","e","f","g","h")
 NUMBERS 		= ("8","7","6","5","4","3","2","1")
@@ -58,24 +46,18 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,captura
 	if boardCompositions.count(board.values.tolist()) == 3:
 		sys.exit("Threefold repetition! This is a draw.")
 
-	# Alle 64 Felder durchgehen und (Figuren)werte zählen für Remisprüfung durch zu wenig Material
-	# Alle 64 Felder durchgehen und legale Züge speichern für Patt- und Mattprüfung
+	# (Figuren)werte zählen für Remisprüfung durch zu wenig Material + legale Züge speichern für Patt- und Mattprüfung
 	for sqr in range(8):
 		for sql in range(8):
 			piece = board.iloc[sqr,sql]
-			# p = pawn (Bauer), q = queen (Dame), r = rook (Turm), n = knight (Springer), b = bishop (Läufer)
-			if piece.endswith("p") or piece.endswith("q") or piece.endswith("r"):
+			if piece.endswith("p") or piece.endswith("q") or piece.endswith("r"): # Bauer / Dame / Turm
 				totalValuePieces += 9
-			elif piece.endswith("n") == "n":
+			elif piece.endswith("n"): # Springer
 				totalValuePieces += 3
-			elif piece.endswith("b") == "b":
+			elif piece.endswith("b"): # Läufer
 				totalValuePieces += 3
-				# Zeilen- und Spaltenindex 2x gerade oder 2x ungerade => weißes Feld
-				if (sqr % 2) == (sql % 2):
-					lightSquaredBishops += 1
-				# Zeilen- und Spaltenindex 1x gerade und 1x ungerade => schwarzes Feld
-				elif (sqr % 2) != (sql % 2):
-					darkSquaredBishops += 1
+				if (sqr % 2) == (sql % 2): lightSquaredBishops += 1 # Indizes beide gerade oder beide ungerade => weißes Feld
+				elif (sqr % 2) != (sql % 2): darkSquaredBishops += 1  # Indizes 1x gerade und 1x ungerade => schwarzes Feld
 
 			# Wenn piece = eigene Figur
 			if (piece.startswith(selfColor(color))):
@@ -92,16 +74,12 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,captura
 				break
 
 	# Nur Leichtfigur ODER nur weißfeldrige Läufer ODER nur schwarzfeldrige Läufer auf dem Brett (neben den Königen) => Unentschieden.
-	if (totalValuePieces <= 3) or (lightSquaredBishops * 3 == totalValuePieces) or (darkSquaredBishops * 3 == totalValuePieces):
+	if (totalValuePieces <= 3) or (lightSquaredBishops*3 == totalValuePieces) or (darkSquaredBishops*3 == totalValuePieces):
 		sys.exit("\nNot enough mating material! This is a draw.\n")
 
 	# Wenn keine legalen Züge... und König nicht im Schach => Patt ...und König im Schach => Matt
-	if not legalMovesV2:
-		if not myKingInCheck:
-			sys.exit("\nStalemate! This is a draw.\n")
-		if myKingInCheck:
-			color = "White" if color == "Black" else "Black"
-			sys.exit("\nCheckmate! "+color+" wins.\n")
+	if not legalMovesV2 and not myKingInCheck: 	sys.exit("\nStalemate! This is a draw.\n")
+	if not legalMovesV2 and myKingInCheck: 		sys.exit("\nCheckmate! "+("White" if color == "Black" else "Black")+" wins.\n")
 
 	if fiftyMovesDraw:
 		sys.exit("\n50 moves without moving a pawn, taking a piece or mating the king! This is a draw.\n")
@@ -157,18 +135,9 @@ def checkCastleMovesV1(piece,myKingInCheck,legalMovesV1,moveHistory) -> tuple:
 # ====================================================================================================
 
 def checkLegalMovesV1(piece,legalMovesV1,sqr,sql,capturableEnPassant) -> list:
-	if piece.endswith("p"):
-		legalMovesV1  = checkLegalMovesPawn(piece,legalMovesV1,sqr,sql,capturableEnPassant)
-
-	if piece[1] in ["r","b","q"]:
-		legalMovesV1  = checkLegalMovesRookBishopQueen(piece,legalMovesV1,sqr,sql)
-
-	if piece.endswith("n"):
-		legalMovesV1  = checkLegalMovesKnightKing(piece,legalMovesV1,sqr,sql)
-
-	if piece.endswith("k"):
-		legalMovesV1  = checkLegalMovesKnightKing(piece,legalMovesV1,sqr,sql)
-
+	if piece[1] in ["p"]:			legalMovesV1 = checkLegalMovesPawn(piece,legalMovesV1,sqr,sql,capturableEnPassant)
+	if piece[1] in ["r","b","q"]: 	legalMovesV1 = checkLegalMovesRookBishopQueen(piece,legalMovesV1,sqr,sql)
+	if piece[1] in ["n","k"]: 		legalMovesV1 = checkLegalMovesKnightKing(piece,legalMovesV1,sqr,sql)
 	return legalMovesV1
 
 
@@ -412,12 +381,11 @@ def move(piece,shortCastleRight,longCastleRight,sqr,sql,tsr,tsl,capturableEnPass
 		board.iloc[tsr,tsl] = piece
 
 	# Wenn auf Zielfeld Gegner steht => Schlagzug
-	if board.iloc[tsr,tsl][0] == otherColor(piece):
-		hasTakenPiece = True
+	if board.iloc[tsr,tsl][0] == otherColor(piece): hasTakenPiece = True
 
-	epRank = 3 if piece.startswith("w") else 4
+	enpassantRank = 3 if piece.startswith("w") else 4
 	# Wenn enPassant möglich war UND ich weißen Bauer hatte UND ich auf 5. Reihe stand UND Spalte Zielfeld war Spalte gegenerischer Bauer
-	if len(capturableEnPassant) == 2 and  piece == piece[0]+"p" and sqr == epRank and tsl == capturableEnPassant[1]:
+	if len(capturableEnPassant) == 2 and  piece == piece[0]+"p" and sqr == enpassantRank and tsl == capturableEnPassant[1]:
 		# Dann gegenerischen Bauer eliminieren => Schlagzug
 		board.iloc[capturableEnPassant[0],capturableEnPassant[1]] = "--"
 		hasTakenPiece = True
@@ -435,18 +403,18 @@ def checkIfWeDoubleSteppedPawn(piece,sqr,tsr,tsl) -> list:
 
 def attackedByOpponent(dangerFields,piece) -> bool:
 	for df in dangerFields:
-		if board.iloc[df[0],df[1]] == otherColor(piece) + piece[1]:			
+		if board.iloc[df[0],df[1]] == otherColor(piece) + piece[1]:
 			return True
+	return False
 
 
 def isUnderAttack(color,mySquareRank,mySquareLine) -> bool:
 	# Vom Standpunkt des Königs werden Bauern/Springer/Läufer/Turm/Damen/Königszüge gegangen (dangerFields)
 	# Wenn in solch einem Feld die jeweilige gegnerische Figur steht => König angegriffen => return True; sonst return False
 
-	piece = selfColor(color)+"p" # Bauer
-	dangerFields = []
-
-	factor = -1 if color == "Black" else 1
+	piece 			= selfColor(color)+"p" # Bauer
+	dangerFields 	= []
+	factor 			= -1 if color == "Black" else 1
 
 	# wenn Feld links oben bzw. rechts oben innerhalb Brett => Feld speichern und später prüfen, ob da gegn. Bauer steht
 	if ((0 <= mySquareRank-1*factor <= 7) and (0 <= mySquareLine-1*factor <= 7)):
