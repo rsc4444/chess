@@ -38,7 +38,8 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,captura
 	fiftyMovesDraw 		= False
 
 	boardCompositions.append(board.values.tolist())
-	if boardCompositions.count(board.values.tolist()) == 3: sys.exit("Threefold repetition! This is a draw.")
+	if boardCompositions.count(board.values.tolist()) == 3:
+		sys.exit("Threefold repetition! This is a draw.")
 
 	# (Figuren)werte zählen für Remisprüfung durch zu wenig Material + legale Züge speichern für Patt- und Mattprüfung
 	for sqr in range(8):
@@ -50,8 +51,10 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,captura
 				totalValuePieces += 3
 			elif piece.endswith("b"): # Läufer
 				totalValuePieces += 3
-				if (sqr % 2) == (sql % 2): lightSquaredBishops += 1 # Indizes beide gerade oder beide ungerade => weißes Feld
-				elif (sqr % 2) != (sql % 2): darkSquaredBishops += 1  # Indizes 1x gerade und 1x ungerade => schwarzes Feld
+				if (sqr % 2) == (sql % 2): # Indizes beide gerade oder beide ungerade => weißes Feld
+					lightSquaredBishops += 1
+				elif (sqr % 2) != (sql % 2): # Indizes 1x gerade und 1x ungerade => schwarzes Feld
+					darkSquaredBishops += 1 
 
 			# Wenn piece = eigene Figur
 			if (piece.startswith(color)):
@@ -68,13 +71,17 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,captura
 				break
 
 	# Nur Leichtfigur ODER nur weißfeldrige Läufer ODER nur schwarzfeldrige Läufer auf dem Brett (neben den Königen) => Unentschieden.
-	if totalValuePieces <= 3 or (lightSquaredBishops or darkSquaredBishops)*3 == totalValuePieces: sys.exit("\nNot enough mating material! This is a draw.\n")
+	if totalValuePieces <= 3 or (lightSquaredBishops or darkSquaredBishops)*3 == totalValuePieces:
+		sys.exit("\nNot enough mating material! This is a draw.\n")
 
 	# Wenn keine legalen Züge... und König nicht im Schach => Patt ...und König im Schach => Matt
-	if not legalMovesV2 and not myKingInCheck: 	sys.exit("\nStalemate! This is a draw.\n")
-	if not legalMovesV2 and myKingInCheck: 		sys.exit("\nCheckmate! "+("White" if color == "b" else "Black")+" wins.\n")
+	if not legalMovesV2 and not myKingInCheck:
+		sys.exit("\nStalemate! This is a draw.\n")
+	elif not legalMovesV2 and myKingInCheck:
+		sys.exit("\nCheckmate! "+("White" if color == "b" else "Black")+" wins.\n")
 
-	if fiftyMovesDraw: sys.exit("\n50 moves without moving a pawn, taking a piece or mating the king! This is a draw.\n")
+	if fiftyMovesDraw:
+		sys.exit("\n50 moves without moving a pawn, taking a piece or mating the king! This is a draw.\n")
 
 
 def isMyKingInCheck(color) -> bool:
@@ -125,9 +132,12 @@ def checkCastleMovesV1(piece,myKingInCheck,legalMovesV1,moveHistory) -> tuple:
 # ====================================================================================================
 
 def checkLegalMovesV1(piece,legalMovesV1,sqr,sql,capturableEnPassant) -> list:
-	if piece[1] in ["p"]:			legalMovesV1 = checkLegalMovesPawn(piece,legalMovesV1,sqr,sql,capturableEnPassant)
-	if piece[1] in ["r","b","q"]: 	legalMovesV1 = checkLegalMovesRookBishopQueen(piece,legalMovesV1,sqr,sql)
-	if piece[1] in ["n","k"]: 		legalMovesV1 = checkLegalMovesKnightKing(piece,legalMovesV1,sqr,sql)
+	if piece[1] in ["p"]:
+		legalMovesV1 = checkLegalMovesPawn(piece,legalMovesV1,sqr,sql,capturableEnPassant)
+	if piece[1] in ["r","b","q"]:
+		legalMovesV1 = checkLegalMovesRookBishopQueen(piece,legalMovesV1,sqr,sql)
+	if piece[1] in ["n","k"]:
+		legalMovesV1 = checkLegalMovesKnightKing(piece,legalMovesV1,sqr,sql)
 	return legalMovesV1
 
 
