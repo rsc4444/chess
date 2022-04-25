@@ -34,7 +34,7 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,captura
 	totalValuePieces 	= 0
 	lightSquaredBishops = 0
 	darkSquaredBishops 	= 0
-	legalMovesV3 		= []
+	legalMovesV2 		= []
 
 	boardCompositions.append(board.values.tolist())
 	if boardCompositions.count(board.values.tolist()) == 3:
@@ -59,7 +59,7 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,captura
 			if piece.startswith(color):
 				legalMovesV1 = []
 				legalMovesV1 = checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
-				legalMovesV2 = checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceRank,sourceLine)
+				legalMovesV2 = checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine)
 
 	# Nur Leichtfigur ODER nur weißfeldrige Läufer ODER nur schwarzfeldrige Läufer auf dem Brett (neben den Königen) => Unentschieden.
 	if totalValuePieces <= 3 or lightSquaredBishops*3 == totalValuePieces or darkSquaredBishops*3 == totalValuePieces:
@@ -135,8 +135,8 @@ def checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassa
 	return legalMovesV1
 
 
-def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceRank,sourceLine) -> list:	
-	legalMovesV4 = copy.copy(legalMovesV1) # call-by-value, daher copy
+def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine) -> list:	
+	legalMovesV1_copy = copy.copy(legalMovesV1) # call-by-value, daher copy
 	backRank = 7 if color == "w" else 0
 
 	# "checkCastleMovesV2" || Prüfung, ob Rochadezug vorliegt und ob diese durchgeführt werden kann (König darf nicht ins Schach)
@@ -150,7 +150,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceRank,sourceLin
 			board.iloc[backRank,5] = color+"k"
 			# Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
 			if isMyKingInCheck(color):
-				legalMovesV4.remove(move)
+				legalMovesV1_copy.remove(move)
 				board.iloc[backRank,5] = "--"
 				board.iloc[backRank,4] = color+"k"
 				continue
@@ -160,7 +160,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceRank,sourceLin
 				board.iloc[backRank,6] = color+"k"
 				# Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
 				if isMyKingInCheck(color):
-					legalMovesV4.remove(move)
+					legalMovesV1_copy.remove(move)
 					board.iloc[backRank,6] = "--"
 					board.iloc[backRank,4] = color+"k"
 					continue
@@ -177,7 +177,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceRank,sourceLin
 			board.iloc[backRank,4] = "--"
 			board.iloc[backRank,3] = color+"k"
 			if isMyKingInCheck(color):
-				legalMovesV4.remove(move)
+				legalMovesV1_copy.remove(move)
 				board.iloc[backRank,3] = "--"
 				board.iloc[backRank,4] = color+"k"
 				continue
@@ -185,7 +185,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceRank,sourceLin
 				board.iloc[backRank,3] = "--"
 				board.iloc[backRank,2] = color+"k"
 				if isMyKingInCheck(color):
-					legalMovesV4.remove(move)
+					legalMovesV1_copy.remove(move)
 					board.iloc[backRank,2] = "--"
 					board.iloc[backRank,4] = color+"k"
 					continue
@@ -203,16 +203,16 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceRank,sourceLin
 
 		# Wenn mein König nach dem getesteten legalMove im Schach steht, wird dieser Zug entfernt
 		if isMyKingInCheck(color):
-			legalMovesV4.remove(move)
+			legalMovesV1_copy.remove(move)
 
 		# Nach der Prüfung wird der Zug wieder zurückgenommen (Zielfeld = die Figur, die vorher da stand und Quellfeld = die gewählte Figur)
 		board.iloc[move[0],move[1]] = enterSquare
 		board.iloc[sourceRank,sourceLine] = piece
 
-	for lmv4 in legalMovesV4:
-		legalMovesV3.append(lmv4)
+	for lmv1_copy in legalMovesV1_copy:
+		legalMovesV2.append(lmv1_copy)
 
-	return legalMovesV3
+	return legalMovesV2
 
 
 def checkLegalMovesPawn(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant) -> list:
@@ -480,8 +480,8 @@ def startGame():
 			legalMovesV1,\
 			shortCastleRight,\
 			longCastleRight 	= checkCastleMovesV1(piece,myKingInCheck,legalMovesV1,moveHistory)
-			legalMovesV3 		= []
-			legalMovesV2 		= checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV3,sourceRank,sourceLine)
+			legalMovesV2 		= []
+			legalMovesV2 		= checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine)
 
 			# Weiter gehts nur, wenn legaler Zug mit der Figur möglich, sonst Wdh. Eingabe (break)
 			if legalMovesV2:
