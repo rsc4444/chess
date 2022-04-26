@@ -137,62 +137,41 @@ def checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassa
 
 def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine) -> list:	
 	legalMovesV1_copy = copy.copy(legalMovesV1) # call-by-value, daher copy
-	backRank = 7 if color == "w" else 0
+	backRank = 7 if color == "w" else 0 # (Grund)reihe in Abhängigkeit von Farbe (schwarz/weiß)
 
 	# "checkCastleMovesV2" || Prüfung, ob Rochadezug vorliegt und ob diese durchgeführt werden kann (König darf nicht ins Schach)
 	for move in legalMovesV1:
+		summand07 = 0 if move in [[backRank,6],[backRank,7]] else 7 # (Grund)reihe in Abhängigkeit von Rochade (kurz/lang)
+		summand08 = 0 if move in [[backRank,6],[backRank,7]] else 8 # Linie in Abhängigkeit von Rochade (kurz/lang)
 		# Beide Rochadezüge (man gibt als Zielfeld neues Königsfeld oder Turmfeld an) werden geprüft
 		# Bei beiden Rochadezügen gilt: Die beiden Felder neben König (Zwischenschritt und Zielfeld) dürfen nicht bedroht sein
-		# kurze Rochade
-		if piece.endswith("k") and board.iloc[backRank,4] == color+"k" and move in [[backRank,6],[backRank,7]]:
+		if piece.endswith("k") and board.iloc[backRank,abs(4-summand08)] == color+"k" and move in [[backRank,abs(6-summand08)],[backRank,abs(7-summand07)]]:
 			# 1. Königsschritt gehen (Zwischenschritt)
-			board.iloc[backRank,4] = "--"
-			board.iloc[backRank,5] = color+"k"
+			board.iloc[backRank,abs(4-summand08)] = "--"
+			board.iloc[backRank,abs(5-summand08)] = color+"k"
 			# Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
 			if isMyKingInCheck(color):
 				legalMovesV1_copy.remove(move)
-				board.iloc[backRank,5] = "--"
-				board.iloc[backRank,4] = color+"k"
+				board.iloc[backRank,abs(5-summand08)] = "--"
+				board.iloc[backRank,abs(4-summand08)] = color+"k"
 				continue
 			# Wenn König nach 1. Königsschritt nicht im Schach => 2. Königsschritt gehen (Zielfeld)
 			else:
-				board.iloc[backRank,5] = "--"
-				board.iloc[backRank,6] = color+"k"
+				board.iloc[backRank,abs(5-summand08)] = "--"
+				board.iloc[backRank,abs(6-summand08)] = color+"k"
 				# Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
 				if isMyKingInCheck(color):
 					legalMovesV1_copy.remove(move)
-					board.iloc[backRank,6] = "--"
-					board.iloc[backRank,4] = color+"k"
+					board.iloc[backRank,abs(6-summand08)] = "--"
+					board.iloc[backRank,abs(4-summand08)] = color+"k"
 					continue
 				# Wenn König auch nach 2. Königsschritt nicht im Schach => Ausgangsstellung wiederherstellen
 				else:
-					board.iloc[backRank,6] = "--"
-					board.iloc[backRank,4] = color+"k"
+					board.iloc[backRank,abs(6-summand08)] = "--"
+					board.iloc[backRank,abs(4-summand08)] = color+"k"
 					# Wenn bei Rochade der Turm als Zielfeld gewählt wurde, soll das auch dann möglich sein, wenn das Turmfeld bedroht ist
-					# Ohne continue würde der Zug im Anshcluss removed werden, weil dann geprüft wird, ob Turmfeld im Schach steht
-					if move == [backRank,7]: continue
-
-		# lange Rochade
-		if piece.endswith("k") and board.iloc[backRank,4] == color+"k" and move in [[backRank,2],[backRank,0]]:
-			board.iloc[backRank,4] = "--"
-			board.iloc[backRank,3] = color+"k"
-			if isMyKingInCheck(color):
-				legalMovesV1_copy.remove(move)
-				board.iloc[backRank,3] = "--"
-				board.iloc[backRank,4] = color+"k"
-				continue
-			else:
-				board.iloc[backRank,3] = "--"
-				board.iloc[backRank,2] = color+"k"
-				if isMyKingInCheck(color):
-					legalMovesV1_copy.remove(move)
-					board.iloc[backRank,2] = "--"
-					board.iloc[backRank,4] = color+"k"
-					continue
-				else:
-					board.iloc[backRank,2] = "--"
-					board.iloc[backRank,4] = color+"k"
-					if move == [backRank,0]: continue
+					# Ohne continue würde der Zug im Anschluss removed werden, weil dann geprüft wird, ob Turmfeld im Schach steht
+					if move == [backRank,abs(7-summand07)]: continue
 
 		# Inhalt von Zielfeld zwischenspeichern, um move später zu resetten
 		enterSquare = board.iloc[move[0],move[1]]
