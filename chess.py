@@ -302,7 +302,7 @@ def checkLegalMovesKnightKing(piece,legalMovesV1,sourceRank,sourceLine) -> list:
 			elif direction == 8: # oben oben links
 				stepRank, stepLine = -2, -1
 
-		if piece.endswith("k"):  # König
+		elif piece.endswith("k"):  # König
 			if direction == 1:   # oben
 				stepRank, stepLine = -1, 0
 			elif direction == 2: # oben rechts
@@ -419,10 +419,7 @@ def isUnderAttack(color,myRank,myLine) -> bool:
 	for shortcut in ["r","b","q","n","k"]:  # Turm / Läufer / Dame / Springer / König
 		piece = color+shortcut
 		dangerFields = []
-		if shortcut in ["r","b","q"]:
-			dangerFields = checkLegalMovesRookBishopQueen(piece,dangerFields,myRank,myLine)
-		elif shortcut in ["n","k"]:
-			dangerFields = checkLegalMovesKnightKing(piece,dangerFields,myRank,myLine)
+		dangerFields = checkLegalMovesV1(piece,dangerFields,myRank,myLine,capturableEnPassant=[])
 		if attackedByOpponent(dangerFields,piece): return True
 		
 	return False
@@ -445,10 +442,10 @@ def startGame():
 	color 				= "w"
 
 	print("\nWelcome to my chess game!")
-	playerWhite = selectPlayerType("White")
-	playerBlack = selectPlayerType("Black")
-	# playerWhite = "engine"
-	# playerBlack = "engine"
+	# playerWhite = selectPlayerType("White")
+	# playerBlack = selectPlayerType("Black")
+	playerWhite = "human"
+	playerBlack = "human"
 	print(board)
 
 	while True:
@@ -468,8 +465,8 @@ def startGame():
 
 			# Definition Funktionsparameter: sourceRank / sourceLine
 			piece 	= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur auf "From"-Feld, z.B. "wp" oder "bp"s
-			sourceRank 	= int(NUMBERS.index(sourceSquare[1]))			# Zahl/Reihe in Indexform [0-7]
-			sourceLine 	= int(LETTERS.index(sourceSquare[0]))			# Buchstabe/Linie in Indexform [0-7]
+			sourceRank 	= int(NUMBERS.index(sourceSquare[1]))		# Zahl/Reihe in Indexform [0-7]
+			sourceLine 	= int(LETTERS.index(sourceSquare[0]))		# Buchstabe/Linie in Indexform [0-7]
 
 			# Wenn Farbe am Zug != Farbe der zu bewegenden Figur
 			if piece[0] != color: continue
