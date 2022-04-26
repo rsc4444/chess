@@ -30,7 +30,7 @@ def otherColor(piece):
 # Prüfe bestimmte Zustände
 # ====================================================================================================
 
-def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,capturableEnPassant):
+def checkDrawCheckmate(color,moveHistory,boardCompositions,kingInCheck,capturableEnPassant):
 	totalValuePieces 	= 0
 	lightSquaredBishops = 0
 	darkSquaredBishops 	= 0
@@ -66,9 +66,9 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,captura
 		sys.exit("\nNot enough mating material! This is a draw.\n")
 
 	# Wenn keine legalen Züge... und König nicht im Schach => Patt ...und König im Schach => Matt
-	if not legalMovesV2 and not myKingInCheck:
+	if not legalMovesV2 and not kingInCheck:
 		sys.exit("\nStalemate! This is a draw.\n")
-	elif not legalMovesV2 and myKingInCheck:
+	elif not legalMovesV2 and kingInCheck:
 		sys.exit("\nCheckmate! "+("White" if color == "b" else "Black")+" wins.\n")
 
 	# Mindestens 50 Züge in Folge kein Bauern- oder Schlagzug oder Umwandlung => Unentschieden.
@@ -78,7 +78,7 @@ def checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,captura
 		sys.exit("\n50 moves without moving a pawn, taking a piece or mating the king! This is a draw.\n")
 
 
-def isMyKingInCheck(color) -> bool:
+def isKingInCheck(color) -> bool:
 	# Iteration über das Brett. Wenn eigener König gefunden => prüfe, ob dieser im Schach steht (return True/False)
 	for sourceRank in range(8):
 		for sourceLine in range(8):
@@ -106,16 +106,16 @@ def checkLongCastleRight(piece,moveHistory,backRank) -> bool:
 	return False
 
 
-def checkCastleMovesV1(piece,myKingInCheck,legalMovesV1,moveHistory) -> tuple:
+def checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory) -> tuple:
 	shortCastleRight 	= checkShortCastleRight(piece,moveHistory,backRank = "1" if piece.startswith("w") else "8")
 	longCastleRight 	= checkLongCastleRight(piece,moveHistory,backRank = "1" if piece.startswith("w") else "8")
 
 	backRank = 7 if piece.startswith("w") else 0
 	# König muss am Zug sein und darf nicht im Schach stehen => füge Rochadezüge hinzu
-	if piece.endswith("k") and not myKingInCheck and shortCastleRight:
+	if piece.endswith("k") and not kingInCheck and shortCastleRight:
 		legalMovesV1.append([backRank,6])
 		legalMovesV1.append([backRank,7])
-	if piece.endswith("k") and not myKingInCheck and longCastleRight:
+	if piece.endswith("k") and not kingInCheck and longCastleRight:
 		legalMovesV1.append([backRank,0])
 		legalMovesV1.append([backRank,2])
 
@@ -150,7 +150,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 			board.iloc[backRank,abs(4-summand08)] = "--"
 			board.iloc[backRank,abs(5-summand08)] = color+"k"
 			# Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
-			if isMyKingInCheck(color):
+			if isKingInCheck(color):
 				legalMovesV1_copy.remove(move)
 				board.iloc[backRank,abs(5-summand08)] = "--"
 				board.iloc[backRank,abs(4-summand08)] = color+"k"
@@ -160,7 +160,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 				board.iloc[backRank,abs(5-summand08)] = "--"
 				board.iloc[backRank,abs(6-summand08)] = color+"k"
 				# Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
-				if isMyKingInCheck(color):
+				if isKingInCheck(color):
 					legalMovesV1_copy.remove(move)
 					board.iloc[backRank,abs(6-summand08)] = "--"
 					board.iloc[backRank,abs(4-summand08)] = color+"k"
@@ -181,7 +181,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 		board.iloc[move[0],move[1]] = piece
 
 		# Wenn mein König nach dem getesteten legalMove im Schach steht, wird dieser Zug entfernt
-		if isMyKingInCheck(color):
+		if isKingInCheck(color):
 			legalMovesV1_copy.remove(move)
 
 		# Nach der Prüfung wird der Zug wieder zurückgenommen (Zielfeld = die Figur, die vorher da stand und Quellfeld = die gewählte Figur)
@@ -426,8 +426,8 @@ def startGame():
 
 	while True:
 		# Vor jedem Zug prüfen: Mein König im Schach? Remisstellung? Mattstellung?
-		myKingInCheck = isMyKingInCheck(color)
-		checkDrawCheckmate(color,moveHistory,boardCompositions,myKingInCheck,capturableEnPassant)
+		kingInCheck = isKingInCheck(color)
+		checkDrawCheckmate(color,moveHistory,boardCompositions,kingInCheck,capturableEnPassant)
 
 		print("\n"+("White" if color == "w" else "Black")+" to move:")
 		while True:
@@ -452,7 +452,7 @@ def startGame():
 			legalMovesV1 		= checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)	
 			legalMovesV1,\
 			shortCastleRight,\
-			longCastleRight 	= checkCastleMovesV1(piece,myKingInCheck,legalMovesV1,moveHistory)
+			longCastleRight 	= checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory)
 			legalMovesV2 		= []
 			legalMovesV2 		= checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine)
 
