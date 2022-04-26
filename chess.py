@@ -375,8 +375,7 @@ def checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine) -> list:
 
 def attackedByOpponent(dangerFields,piece) -> bool:
 	for df in dangerFields:
-		if board.iloc[df[0],df[1]] == otherColor(piece) + piece[1]:
-			return True
+		if board.iloc[df[0],df[1]] == otherColor(piece) + piece[1]:	return True
 	return False
 
 
@@ -421,10 +420,8 @@ def startGame():
 	color 				= "w"
 
 	print("\nWelcome to my chess game!")
-	# playerWhite = selectPlayerType("White")
-	# playerBlack = selectPlayerType("Black")
-	playerWhite = "human"
-	playerBlack = "human"
+	playerWhite = selectPlayerType("White")
+	playerBlack = selectPlayerType("Black")
 	print(board)
 
 	while True:
