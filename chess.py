@@ -219,19 +219,19 @@ def checkLegalMovesPawn(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPas
 	summand = 7 if piece.startswith("b") else 0 # Für Position: ggü-liegende Reihen/Linien von Schwarz und Weiß ergeben 7
 	factor = -1 if piece.startswith("b") else 1 # Für Zug: (Schlag)Richtung der Bauern von schwarz und weiß haben umgekehrte Vorzeichen
 	# Wenn Bauer in 2. Reihe und beide Felder davor frei => füge Zug hinzu
-	if sourceRank == (6-summand)*factor and board.iloc[sourceRank-1*factor,sourceLine] == "--" and board.iloc[sourceRank-2*factor,sourceLine] == "--":
+	if sourceRank == abs(6-summand) and board.iloc[sourceRank-1*factor,sourceLine] == "--" and board.iloc[sourceRank-2*factor,sourceLine] == "--":
 		legalMovesV1.append([sourceRank-2*factor,sourceLine])
 	# Wenn Bauer in 5. Reihe und links/rechts ein gegn. Bauer steht, der gerade einen Doppelschritt gegangen ist => füge Zug hinzu
-	elif sourceRank == (3-summand)*factor and sourceLine != (0-summand)*factor and capturableEnPassant == [sourceRank,sourceLine-1*factor]:
+	elif sourceRank == abs(3-summand) and sourceLine != abs(0-summand) and capturableEnPassant == [sourceRank,sourceLine-1*factor]:
 		legalMovesV1.append([sourceRank-1*factor,sourceLine-1*factor])
-	elif sourceRank == (3-summand)*factor and sourceLine != (7-summand)*factor and capturableEnPassant == [sourceRank,sourceLine+1*factor]:
+	elif sourceRank == abs(3-summand) and sourceLine != abs(7-summand) and capturableEnPassant == [sourceRank,sourceLine+1*factor]:
 		legalMovesV1.append([sourceRank-1*factor,sourceLine+1*factor])
 	# Immer und unabhängig von Reihe: Feld davor frei? Schlagzug nach links/rechts möglich? => füge Zug hinzu
 	if board.iloc[sourceRank-1*factor,sourceLine] == "--":
 		legalMovesV1.append([sourceRank-1*factor,sourceLine])
-	if sourceLine != (0-summand)*factor and board.iloc[sourceRank-1*factor,sourceLine-1*factor].startswith(otherColor(piece)):
+	if sourceLine != abs(0-summand) and board.iloc[sourceRank-1*factor,sourceLine-1*factor].startswith(otherColor(piece)):
 		legalMovesV1.append([sourceRank-1*factor,sourceLine-1*factor])
-	if sourceLine != (7-summand)*factor and board.iloc[sourceRank-1*factor,sourceLine+1*factor].startswith(otherColor(piece)):
+	if sourceLine != abs(7-summand) and board.iloc[sourceRank-1*factor,sourceLine+1*factor].startswith(otherColor(piece)):
 		legalMovesV1.append([sourceRank-1*factor,sourceLine+1*factor])
 	return legalMovesV1
 
