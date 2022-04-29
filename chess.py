@@ -86,7 +86,7 @@ def isKingInCheck(color) -> bool:
 				return isUnderAttack(color,sourceRank,sourceLine)
 
 
-def checkShortCastleRight(piece,moveHistory,backRank) -> bool:
+def checkShortCastlingRight(piece,moveHistory,backRank) -> bool:
 	# Wenn König und Turm auf Ausgangsfeld stehen und Felder dazwischen frei => weitermachen
 	if board.loc[backRank,"e"]==piece[0]+"k" and board.loc[backRank,"f"]=="--" and board.loc[backRank,"g"]=="--" and board.loc[backRank,"h"]==piece[0]+"r":
 		# Wenn König oder Turm schon bewegt wurden => Rochade nicht möglich, sonst (vorerst) möglich
@@ -97,7 +97,7 @@ def checkShortCastleRight(piece,moveHistory,backRank) -> bool:
 	return False
 
 
-def checkLongCastleRight(piece,moveHistory,backRank) -> bool:
+def checkLongCastlingRight(piece,moveHistory,backRank) -> bool:
 	if board.loc[backRank,"a"]==piece[0]+"r" and board.loc[backRank,"b"]=="--" and board.loc[backRank,"c"]=="--" and board.loc[backRank,"d"]=="--" and board.loc[backRank,"e"]==piece[0]+"k":
 		for move in moveHistory:
 			if move[1]=="a"+backRank or move[2]=="a"+backRank or move[1]=="e"+backRank:
@@ -107,19 +107,19 @@ def checkLongCastleRight(piece,moveHistory,backRank) -> bool:
 
 
 def checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory) -> tuple:
-	shortCastleRight 	= checkShortCastleRight(piece,moveHistory,backRank = "1" if piece.startswith("w") else "8")
-	longCastleRight 	= checkLongCastleRight(piece,moveHistory,backRank = "1" if piece.startswith("w") else "8")
+	shortCastlingRight 	= checkShortCastlingRight(piece,moveHistory,backRank = "1" if piece.startswith("w") else "8")
+	longCastlingRight 	= checkLongCastlingRight(piece,moveHistory,backRank = "1" if piece.startswith("w") else "8")
 
 	backRank = 7 if piece.startswith("w") else 0
 	# König muss am Zug sein und darf nicht im Schach stehen => füge Rochadezüge hinzu
-	if piece.endswith("k") and not kingInCheck and shortCastleRight:
+	if piece.endswith("k") and not kingInCheck and shortCastlingRight:
 		legalMovesV1.append([backRank,6])
 		legalMovesV1.append([backRank,7])
-	if piece.endswith("k") and not kingInCheck and longCastleRight:
+	if piece.endswith("k") and not kingInCheck and longCastlingRight:
 		legalMovesV1.append([backRank,0])
 		legalMovesV1.append([backRank,2])
 
-	return legalMovesV1, shortCastleRight, longCastleRight
+	return legalMovesV1, shortCastlingRight, longCastlingRight
 
 # ====================================================================================================
 # Filtere legale Zugmöglichkeiten
@@ -330,18 +330,18 @@ def promote(piece,targetRank,playerWhite,playerBlack) -> tuple:
 	return piece, promotion
 
 
-def move(piece,shortCastleRight,longCastleRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant) -> bool:
+def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant) -> bool:
 	hasTakenPiece = False
 	backRank = 7 if piece.startswith("w") else 0
 
 	# kurze Rochade / lange Rochade
-	if piece.endswith("k") and shortCastleRight and (targetLine == 6 or targetLine == 7):
+	if piece.endswith("k") and shortCastlingRight and (targetLine == 6 or targetLine == 7):
 		board.iloc[backRank,4] = "--"
 		board.iloc[backRank,6] = piece[0]+"k"
 		board.iloc[backRank,7] = "--"
 		board.iloc[backRank,5] = piece[0]+"r"
 
-	elif piece.endswith("k") and longCastleRight and (targetLine == 0 or targetLine == 2):
+	elif piece.endswith("k") and longCastlingRight and (targetLine == 0 or targetLine == 2):
 		board.iloc[backRank,4] = "--"
 		board.iloc[backRank,2] = piece[0]+"k"
 		board.iloc[backRank,0] = "--"
@@ -451,8 +451,8 @@ def startGame():
 			legalMovesV1 		= []
 			legalMovesV1 		= checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)	
 			legalMovesV1,\
-			shortCastleRight,\
-			longCastleRight 	= checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory)
+			shortCastlingRight,\
+			longCastlingRight 	= checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory)
 			legalMovesV2 		= []
 			legalMovesV2 		= checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine)
 
@@ -485,7 +485,7 @@ def startGame():
 
 			# ggf. umwandeln / ggf. enPassant geschlagenen Bauern eliminieren / immer Figur ziehen / ggf. gegangenen Doppelschritt merken / Zughistorie
 			piece, promotion 	= promote(piece,targetRank,playerWhite,playerBlack)
-			hasTakenPiece 		= move(piece,shortCastleRight,longCastleRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant)
+			hasTakenPiece 		= move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant)
 			capturableEnPassant = checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine)
 			moveHistory.append([piece,sourceSquare,targetSquare,hasTakenPiece,promotion])
 			break
