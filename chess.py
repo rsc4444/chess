@@ -18,10 +18,11 @@ board = [
 ["wr","wn","wb","wq","wk","wb","wn","wr"],
 ]
 
-LETTERS 			= ("a","b","c","d","e","f","g","h")
-NUMBERS 			= ("8","7","6","5","4","3","2","1")
-board 				= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
-boardCompositions 	= []
+LETTERS 	= ("a","b","c","d","e","f","g","h")
+NUMBERS 	= ("8","7","6","5","4","3","2","1")
+DIRECTIONS 	= {"UP":(-1,0),"DOWN":(+1,0),"RIGHT":(0,+1),"LEFT":(0,-1),"UPRIGHT":(-1,+1),"DOWNLEFT":(+1,-1),"DOWNRIGHT":(+1,+1),"UPLEFT":(-1,-1)}
+board 		= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
+boardCopy 	= []
 
 def otherColor(piece):
     return "w" if piece[0] == "b" else "b"
@@ -30,14 +31,14 @@ def otherColor(piece):
 # Prüfe bestimmte Zustände
 # ====================================================================================================
 
-def checkDrawCheckmate(color,moveHistory,boardCompositions,kingInCheck,capturableEnPassant):
+def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant):
 	totalValuePieces 	= 0
 	lightSquaredBishops = 0
 	darkSquaredBishops 	= 0
 	legalMovesV2 		= []
 
-	boardCompositions.append(board.values.tolist())
-	if boardCompositions.count(board.values.tolist()) == 3:
+	boardCopy.append(board.values.tolist())
+	if boardCopy.count(board.values.tolist()) == 3:
 		sys.exit("Threefold repetition! This is a draw.")
 
 	# (Figuren)werte zählen für Remisprüfung durch zu wenig Material + legale Züge speichern für Patt- und Mattprüfung
@@ -215,14 +216,6 @@ def checkLegalMovesPawn(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPas
 	return legalMovesV1
 
 
-DIRECTIONS = {"UP":(-1,0),"DOWN":(+1,0),"RIGHT":(0,+1),"LEFT":(0,-1),"UPRIGHT":(-1,+1),"DOWNLEFT":(+1,-1),"DOWNRIGHT":(+1,+1),"UPLEFT":(-1,-1)}
-
-
-def go(direction, repeat):
-	y, x = DIRECTIONS.get(direction)
-	return (y * repeat, x * repeat)
-
-
 def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceRank,sourceLine) -> list:
 	# Turm und Läufer haben max. 4, Dame max. 8 Richtungen. Alle können maximal 7 Schritte gehen
 	for direction in DIRECTIONS:
@@ -355,6 +348,11 @@ def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,target
 	return hasTakenPiece
 
 
+def go(direction, repeat):
+	y, x = DIRECTIONS.get(direction)
+	return (y * repeat, x * repeat)
+
+
 def checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine) -> list:
 	# Checke, ob wir gerade einen Bauern mit Doppelschritt bewegt haben, der als Nächstes durch enPassant vom Gegner geschlagen werden kann
 	capturableEnPassant = []
@@ -419,7 +417,7 @@ def startGame():
 	while True:
 		# Vor jedem Zug prüfen: Mein König im Schach? Remisstellung? Mattstellung?
 		kingInCheck = isKingInCheck(color)
-		checkDrawCheckmate(color,moveHistory,boardCompositions,kingInCheck,capturableEnPassant)
+		checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant)
 
 		print("\n"+("White" if color == "w" else "Black")+" to move:")
 		while True:
