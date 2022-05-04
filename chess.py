@@ -9,12 +9,12 @@ import sys
 
 board = [
 ["br","bn","bb","bq","bk","bb","bn","br"],
-["bp","bp","bp","bp","bp","bp","bp","bp"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
-["wp","wp","wp","wp","wp","wp","wp","wp"],
+["--","--","--","--","--","--","--","--"],
+["--","--","--","--","--","--","--","--"],
 ["wr","wn","wb","wq","wk","wb","wn","wr"],
 ]
 
@@ -215,45 +215,35 @@ def checkLegalMovesPawn(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPas
 	return legalMovesV1
 
 
+DIRECTIONS = {"UP":(-1,0),"DOWN":(+1,0),"RIGHT":(0,+1),"LEFT":(0,-1),"UPRIGHT":(-1,+1),"DOWNLEFT":(+1,-1),"DOWNRIGHT":(+1,+1),"UPLEFT":(-1,-1)}
+
+
+def go(direction, repeat):
+	y, x = DIRECTIONS.get(direction)
+	return (y * repeat, x * repeat)
+
+
 def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceRank,sourceLine) -> list:
 	# Turm und Läufer haben max. 4, Dame max. 8 Richtungen. Alle können maximal 7 Schritte gehen
-	for direction in range(1,9):
+	for direction in DIRECTIONS:
 		for step in range(1,8):
 
-			# Default-Werte von 10 sorgen später für Abbruch der step-Loop, wenn kein legaler Schritt (von 1-7) gefunden wird
-			# Wenn z.B. bei Turm die directions 5-8 oder bei Läufer die directions 1-4 dran sind, soll break folgen
-			stepRank, stepLine = 10, 10
-			
-			if piece.endswith("r") or piece.endswith("q"): # Turm oder Dame
-				if direction == 1:   # vorne
-					stepRank, stepLine = step*-1, 0
-				elif direction == 2: # hinten
-					stepRank, stepLine = step*+1, 0
-				elif direction == 3: # rechts
-					stepRank, stepLine = 0, step*+1
-				elif direction == 4: # links
-					stepRank, stepLine = 0, step*-1
-			
-			if piece.endswith("b") or piece.endswith("q"): # Läufer oder Dame
-				if direction == 5:  # vorne rechts
-					stepRank, stepLine = step*-1, step*+1
-				elif direction == 6: # hinten links
-					stepRank, stepLine = step*+1, step*-1
-				elif direction == 7: # hinten rechts
-					stepRank, stepLine = step*+1, step*+1
-				elif direction == 8: # vorne links
-					stepRank, stepLine = step*-1, step*-1
+			# wenn wenn piece = Turm/Dame und direction = gerade oder piece = Läufer/Dame und direction = diagonal => go | sonst => nächste Richtung
+			if ((piece[1] in ("r","q") and direction in list(DIRECTIONS)[:4]) or (piece[1] in ("b","q") and direction in list(DIRECTIONS)[4:])):
+				stepRank, stepLine = go(direction, step)
 
-			if not ((0 <= sourceRank+stepRank <= 7) and (0 <= sourceLine+stepLine <= 7)): break # Index außerhalb => nächste Richtung
+				if not ((0 <= sourceRank+stepRank <= 7) and (0 <= sourceLine+stepLine <= 7)): break # Index außerhalb => nächste Richtung
 
-			if board.iloc[sourceRank+stepRank,sourceLine+stepLine].startswith(piece[0]): break # Eigene Figur im Weg => nächste Richtung
+				if board.iloc[sourceRank+stepRank,sourceLine+stepLine].startswith(piece[0]): break # Eigene Figur im Weg => nächste Richtung
 
-			if board.iloc[sourceRank+stepRank,sourceLine+stepLine].startswith(otherColor(piece)): # Gegner im Weg => Zug hinzu + nächste Richtung
-				legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
-				break
+				if board.iloc[sourceRank+stepRank,sourceLine+stepLine].startswith(otherColor(piece)): # Gegner im Weg => Zug hinzu + nächste Richtung
+					legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
+					break
 
-			if board.iloc[sourceRank+stepRank,sourceLine+stepLine] == "--": # Feld frei => Zug hinzu + nächster Schritt
-				legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
+				if board.iloc[sourceRank+stepRank,sourceLine+stepLine] == "--": # Feld frei => Zug hinzu + nächster Schritt
+					legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
+
+			else: break
 
 	return legalMovesV1
 
@@ -420,8 +410,10 @@ def startGame():
 	color 				= "w"
 
 	print("\nWelcome to my chess game!")
-	playerWhite = selectPlayerType("White")
-	playerBlack = selectPlayerType("Black")
+	# playerWhite = selectPlayerType("White")
+	# playerBlack = selectPlayerType("Black")
+	playerWhite = "human"
+	playerBlack = "human"
 	print(board)
 
 	while True:
