@@ -221,9 +221,13 @@ def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceRank,sourceLine) -> 
 	for direction in DIRECTIONS:
 		for step in range(1,8):
 
-			# wenn wenn piece = Turm/Dame und direction = gerade oder piece = Läufer/Dame und direction = diagonal => go | sonst => nächste Richtung
+			# wenn piece = Turm/Dame und direction = gerade oder piece = Läufer/Dame und direction = diagonal => go | sonst => nächste Richtung
 			if ((piece[1] in ("r","q") and direction in list(DIRECTIONS)[:4]) or (piece[1] in ("b","q") and direction in list(DIRECTIONS)[4:])):
 				stepRank, stepLine = go(direction, step)
+
+			# # wenn piece = König => go | sonst => nächste Richtung
+			# if piece[1] == "k":
+			# 	stepRank, stepLine = DIRECTIONS.get(direction)
 
 				if not ((0 <= sourceRank+stepRank <= 7) and (0 <= sourceLine+stepLine <= 7)): break # Index außerhalb => nächste Richtung
 
