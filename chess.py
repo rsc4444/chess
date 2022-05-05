@@ -20,7 +20,8 @@ board = [
 
 LETTERS 	= ("a","b","c","d","e","f","g","h")
 NUMBERS 	= ("8","7","6","5","4","3","2","1")
-DIRECTIONS 	= {"UP":(-1,0),"DOWN":(+1,0),"RIGHT":(0,+1),"LEFT":(0,-1),"UPRIGHT":(-1,+1),"DOWNLEFT":(+1,-1),"DOWNRIGHT":(+1,+1),"UPLEFT":(-1,-1)}
+# DIRECTIONS 	= {"UP":(-1,0),"DOWN":(+1,0),"RIGHT":(0,+1),"LEFT":(0,-1),"UPRIGHT":(-1,+1),"DOWNLEFT":(+1,-1),"DOWNRIGHT":(+1,+1),"UPLEFT":(-1,-1)}
+DIRECTIONS 	= [(-1,0),(+1,0),(0,+1),(0,-1),(-1,+1),(+1,-1),(+1,+1),(-1,-1)]
 board 		= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
 boardCopy 	= []
 
@@ -222,7 +223,7 @@ def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceRank,sourceLine) -> 
 		for step in range(1,8):
 
 			# wenn piece = Turm/Dame und direction = gerade oder piece = Läufer/Dame und direction = diagonal => go | sonst => nächste Richtung
-			if ((piece[1] in ("r","q") and direction in list(DIRECTIONS)[:4]) or (piece[1] in ("b","q") and direction in list(DIRECTIONS)[4:])):
+			if ((piece[1] in ("r","q") and direction in DIRECTIONS[:4]) or (piece[1] in ("b","q") and direction in DIRECTIONS[4:])):
 				stepRank, stepLine = go(direction, step)
 
 			# # wenn piece = König => DIRECTIONS.get(direction) | sonst => nächste Richtung
@@ -353,7 +354,8 @@ def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,target
 
 
 def go(direction, repeat):
-	y, x = DIRECTIONS.get(direction)
+	# y, x = DIRECTIONS.get(direction)
+	y, x = direction
 	return (y * repeat, x * repeat)
 
 
