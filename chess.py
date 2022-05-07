@@ -7,7 +7,7 @@ import sys
 # ====================================================================================================
 
 board = [
-["br","--","--","--","bk","--","--","br"],
+["br","--","--","br","bk","--","--","br"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
@@ -111,11 +111,9 @@ def checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory) -> tuple:
 	backRank = 7 if piece.startswith("w") else 0
 	# König muss am Zug sein und darf nicht im Schach stehen => füge Rochadezüge hinzu
 	if piece.endswith("k") and not kingInCheck and shortCastlingRight:
-		legalMovesV1.append([backRank,6])
-		legalMovesV1.append([backRank,7])
+		legalMovesV1.extend([[backRank,6],[backRank,7]])
 	if piece.endswith("k") and not kingInCheck and longCastlingRight:
-		legalMovesV1.append([backRank,0])
-		legalMovesV1.append([backRank,2])
+		legalMovesV1.extend([[backRank,0],[backRank,2]])
 
 	return legalMovesV1, shortCastlingRight, longCastlingRight
 
@@ -125,10 +123,9 @@ def checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory) -> tuple:
 
 def checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant) -> list:
 	if piece[1] == ["p"]:
-		legalMovesV1 = checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
+		return checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
 	else:
-		legalMovesV1 = checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine)
-	return legalMovesV1
+		return checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine)
 
 
 def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine) -> list:
@@ -173,7 +170,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 		
 		board.iloc[move[0],move[1]] = enterSquare # Nach Prüfung Zug zurück (Zielfeld = Figur, die vorher da stand ...
 		board.iloc[sourceRank,sourceLine] = piece # ... und Quellfeld = die gewählte Figur)
-		
+
 	for lmv1_copy in legalMovesV1_copy:
 		legalMovesV2.append(lmv1_copy)
 	return legalMovesV2
@@ -288,9 +285,6 @@ def attackedByOpponent(dangerFields,piece) -> bool:
 
 
 def isUnderAttack(color,myRank,myLine) -> bool:
-	# Vom Standpunkt des Königs werden Bauern/Springer/Läufer/Turm/Damen/Königszüge gegangen (dangerFields)
-	# Wenn in solch einem Feld die jeweilige gegnerische Figur steht => König angegriffen => return True; sonst return False
-
 	piece 			= color+"p" # Bauer
 	dangerFields 	= []
 	factor 			= -1 if color == "b" else 1
@@ -302,6 +296,8 @@ def isUnderAttack(color,myRank,myLine) -> bool:
 		dangerFields.append([myRank-1*factor,myLine+1*factor])
 	if attackedByOpponent(dangerFields,piece): return True
 
+	# Vom Standpunkt des Königs werden Bauern/Springer/Läufer/Turm/Damen/Königszüge gegangen (dangerFields)
+	# Wenn in solch einem Feld die jeweilige gegnerische Figur steht => König angegriffen => return True; sonst return False
 	for shortcut in ["r","b","q","n","k"]:  # Turm / Läufer / Dame / Springer / König
 		piece = color+shortcut
 		dangerFields = []
