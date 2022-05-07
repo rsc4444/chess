@@ -9,24 +9,21 @@ import sys
 
 board = [
 ["br","bn","bb","bq","bk","bb","bn","br"],
+["bp","bp","bp","bp","bp","bp","bp","bp"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
-["--","--","--","--","--","--","--","--"],
-["--","--","--","--","--","--","--","--"],
+["wp","wp","wp","wp","wp","wp","wp","wp"],
 ["wr","wn","wb","wq","wk","wb","wn","wr"],
 ]
 
-LETTERS 	= ("a","b","c","d","e","f","g","h")
-NUMBERS 	= ("8","7","6","5","4","3","2","1")
-# DIRECTIONS 	= {"UP":(-1,0),"DOWN":(+1,0),"RIGHT":(0,+1),"LEFT":(0,-1),"UPRIGHT":(-1,+1),"DOWNLEFT":(+1,-1),"DOWNRIGHT":(+1,+1),"UPLEFT":(-1,-1)}
-DIRECTIONS 	= [(-1,0),(+1,0),(0,+1),(0,-1),(-1,+1),(+1,-1),(+1,+1),(-1,-1)]
-board 		= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
-boardCopy 	= []
-
-def otherColor(piece):
-    return "w" if piece[0] == "b" else "b"
+LETTERS 		= ("a","b","c","d","e","f","g","h")
+NUMBERS 		= ("8","7","6","5","4","3","2","1")
+DIRECTIONS_RBQK = [(-1,0),(+1,0),(0,+1),(0,-1),(-1,+1),(+1,-1),(+1,+1),(-1,-1)]
+DIRECTIONS_N 	= [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
+board 			= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
+boardCopy 		= []
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
@@ -130,10 +127,10 @@ def checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory) -> tuple:
 def checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant) -> list:
 	if piece[1] in ["p"]:
 		legalMovesV1 = checkLegalMovesPawn(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
-	elif piece[1] in ["r","b","q"]:
-		legalMovesV1 = checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceRank,sourceLine)
-	elif piece[1] in ["n","k"]:
-		legalMovesV1 = checkLegalMovesKnightKing(piece,legalMovesV1,sourceRank,sourceLine)
+	elif piece[1] in ["r","b","q","k"]:
+		legalMovesV1 = checkLegalMovesRookBishopQueenKing(piece,legalMovesV1,sourceRank,sourceLine)
+	elif piece[1] in ["n"]:
+		legalMovesV1 = checkLegalMovesKnight(piece,legalMovesV1,sourceRank,sourceLine)
 	return legalMovesV1
 
 
@@ -217,18 +214,12 @@ def checkLegalMovesPawn(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPas
 	return legalMovesV1
 
 
-def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceRank,sourceLine) -> list:
-	# Turm und Läufer haben max. 4, Dame max. 8 Richtungen. Alle können maximal 7 Schritte gehen
-	for direction in DIRECTIONS:
+def checkLegalMovesRookBishopQueenKing(piece,legalMovesV1,sourceRank,sourceLine) -> list:
+	for direction in DIRECTIONS_RBQK:
 		for step in range(1,8):
-
-			# wenn piece = Turm/Dame und direction = gerade oder piece = Läufer/Dame und direction = diagonal => go | sonst => nächste Richtung
-			if ((piece[1] in ("r","q") and direction in DIRECTIONS[:4]) or (piece[1] in ("b","q") and direction in DIRECTIONS[4:])):
-				stepRank, stepLine = go(direction, step)
-
-			# # wenn piece = König => DIRECTIONS.get(direction) | sonst => nächste Richtung
-			# if piece[1] == "k":
-			# 	stepRank, stepLine = DIRECTIONS.get(direction)
+			# wenn piece = Turm/Dame/König und direction = gerade oder piece = Läufer/Dame/König und direction = diagonal => go | sonst => nächste Richtung
+			if ((piece[1] in ("r","q","k") and direction in DIRECTIONS_RBQK[:4]) or (piece[1] in ("b","q","k") and direction in DIRECTIONS_RBQK[4:])):
+				stepRank, stepLine = step*direction[0], step*direction[1]
 
 				if not ((0 <= sourceRank+stepRank <= 7) and (0 <= sourceLine+stepLine <= 7)): break # Index außerhalb => nächste Richtung
 
@@ -241,51 +232,16 @@ def checkLegalMovesRookBishopQueen(piece,legalMovesV1,sourceRank,sourceLine) -> 
 				if board.iloc[sourceRank+stepRank,sourceLine+stepLine] == "--": # Feld frei => Zug hinzu + nächster Schritt
 					legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
 
+				if piece[1] == "k": break # König kann nur ein Schritt gehen, daher Abbruch vor 2. step
+				
 			else: break
 
 	return legalMovesV1
 
 
-def checkLegalMovesKnightKing(piece,legalMovesV1,sourceRank,sourceLine) -> list:
-	# Ein Springer/König kann max. 8 Felder betreten
-	for direction in range(1,9):
-		stepRank, stepLine = 10, 10
-
-		if piece.endswith("n"):  # Springer
-			if direction == 1:   # oben oben rechts
-				stepRank, stepLine = -2, +1
-			elif direction == 2: # oben rechts rechts
-				stepRank, stepLine = -1, +2
-			elif direction == 3: # unten rechts rechts
-				stepRank, stepLine = +1, +2
-			elif direction == 4: # unten unten rechts
-				stepRank, stepLine = +2, +1
-			elif direction == 5: # unten unten links
-				stepRank, stepLine = +2, -1
-			elif direction == 6: # unten links links
-				stepRank, stepLine = +1, -2
-			elif direction == 7: # oben links links
-				stepRank, stepLine = -1, -2
-			elif direction == 8: # oben oben links
-				stepRank, stepLine = -2, -1
-
-		elif piece.endswith("k"):  # König
-			if direction == 1:   # oben
-				stepRank, stepLine = -1, 0
-			elif direction == 2: # oben rechts
-				stepRank, stepLine = -1, +1
-			elif direction == 3: # rechts
-				stepRank, stepLine = 0, +1
-			elif direction == 4: # unten rechts
-				stepRank, stepLine = +1, +1
-			elif direction == 5: # unten
-				stepRank, stepLine = +1, 0
-			elif direction == 6: # unten links
-				stepRank, stepLine = +1, -1
-			elif direction == 7: # links
-				stepRank, stepLine = 0, -1
-			elif direction == 8: # oben links
-				stepRank, stepLine = -1, -1
+def checkLegalMovesKnight(piece,legalMovesV1,sourceRank,sourceLine) -> list:
+	for direction in DIRECTIONS_N:
+		stepRank, stepLine = direction
 
 		if not ((0 <= sourceRank+stepRank <= 7) and (0 <= sourceLine+stepLine <= 7)): continue # Index außerhalb => nächste Richtung
 
@@ -304,6 +260,10 @@ def checkLegalMovesKnightKing(piece,legalMovesV1,sourceRank,sourceLine) -> list:
 # Führe bestimmte Zugaktionen durch
 # ====================================================================================================
 
+def otherColor(piece):
+	return "w" if piece[0] == "b" else "b"
+
+	
 def promote(piece,targetRank,playerWhite,playerBlack) -> tuple:
 	# Checke, ob Umwandlung stattgefunden hat und speichere die Information + die Figur
 	promotion = False
@@ -351,12 +311,6 @@ def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,target
 		hasTakenPiece = True
 
 	return hasTakenPiece
-
-
-def go(direction, repeat):
-	# y, x = DIRECTIONS.get(direction)
-	y, x = direction
-	return (y * repeat, x * repeat)
 
 
 def checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine) -> list:
