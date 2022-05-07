@@ -7,22 +7,22 @@ import sys
 # ====================================================================================================
 
 board = [
-["br","bn","bb","bq","bk","bb","bn","br"],
-["bp","bp","bp","bp","bp","bp","bp","bp"],
+["br","--","--","--","bk","--","--","br"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
-["wp","wp","wp","wp","wp","wp","wp","wp"],
-["wr","wn","wb","wq","wk","wb","wn","wr"],
+["--","--","--","--","--","--","--","--"],
+["--","--","--","--","--","--","--","--"],
+["wr","--","--","--","wk","--","--","wr"],
 ]
 
 LETTERS 		= ("a","b","c","d","e","f","g","h")
 NUMBERS 		= ("8","7","6","5","4","3","2","1")
-directions_rbqk = [(-1,0),(+1,0),(0,+1),(0,-1),(-1,+1),(+1,-1),(+1,+1),(-1,-1)]
-directions_n 	= [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
 board 			= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
 boardCopy 		= []
+directions_rbqk = [(-1,0),(+1,0),(0,+1),(0,-1),(-1,+1),(+1,-1),(+1,+1),(-1,-1)]
+directions_n 	= [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
@@ -139,64 +139,53 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 	for move in legalMovesV1:
 		summand07 = 0 if move in [[backRank,6],[backRank,7]] else 7 # (Grund)reihe in Abhängigkeit von Rochade (kurz/lang)
 		summand08 = 0 if move in [[backRank,6],[backRank,7]] else 8 # Linie in Abhängigkeit von Rochade (kurz/lang)
-		# Beide Rochadezüge (man gibt als Zielfeld neues Königsfeld oder Turmfeld an) werden geprüft
-		# Bei beiden Rochadezügen gilt: Die beiden Felder neben König (Zwischenschritt und Zielfeld) dürfen nicht bedroht sein
+		# Beide Rochadezüge (Zielfeld = Königsfeld/Turmfeld) prüfen | Zwischenschritt + Zielfeld dürfen nicht bedroht sein
 		if piece.endswith("k") and board.iloc[backRank,abs(4-summand08)] == color+"k" and move in [[backRank,abs(6-summand08)],[backRank,abs(7-summand07)]]:
 			# 1. Königsschritt gehen (Zwischenschritt)
 			board.iloc[backRank,abs(4-summand08)] = "--"
-			board.iloc[backRank,abs(5-summand08)] = color+"k"
-			# Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
-			if isKingInCheck(color):
+			board.iloc[backRank,abs(5-summand08)] = color+"k"			
+			if isKingInCheck(color): # Wenn K im Schach => Rochadezug entf. + Ausgangsstellumg wiederherstellen + nächster Zug
 				legalMovesV1_copy.remove(move)
 				board.iloc[backRank,abs(5-summand08)] = "--"
 				board.iloc[backRank,abs(4-summand08)] = color+"k"
-				continue
-			# Wenn König nach 1. Königsschritt nicht im Schach => 2. Königsschritt gehen (Zielfeld)
-			else:
+				continue			
+			else: # Wenn König nach 1. Königsschritt nicht im Schach => 2. Königsschritt gehen (Zielfeld)
 				board.iloc[backRank,abs(5-summand08)] = "--"
-				board.iloc[backRank,abs(6-summand08)] = color+"k"
-				# Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
-				if isKingInCheck(color):
+				board.iloc[backRank,abs(6-summand08)] = color+"k"				
+				if isKingInCheck(color): # Wenn König im Schach => Rochadezug entfernen + Ausgangsstellumg wiederherstellen + nächster Zug
 					legalMovesV1_copy.remove(move)
 					board.iloc[backRank,abs(6-summand08)] = "--"
 					board.iloc[backRank,abs(4-summand08)] = color+"k"
-					continue
-				# Wenn König auch nach 2. Königsschritt nicht im Schach => Ausgangsstellung wiederherstellen
-				else:
+					continue				
+				else:# Wenn König auch nach 2. Königsschritt nicht im Schach =>  Ausgangsstellumg wiederherstellen
 					board.iloc[backRank,abs(6-summand08)] = "--"
 					board.iloc[backRank,abs(4-summand08)] = color+"k"
-					# Wenn bei Rochade der Turm als Zielfeld gewählt wurde, soll das auch dann möglich sein, wenn das Turmfeld bedroht ist
-					# Ohne continue würde der Zug im Anschluss removed werden, weil dann geprüft wird, ob Turmfeld im Schach steht
+					# Turm darf als Zielfeld gewählt werden, auch wenn es bedroht ist | ohne continue wäre remove im Anschluss, da Turmfeld im Schach
 					if move == [backRank,abs(7-summand07)]: continue
-
-		# Inhalt von Zielfeld zwischenspeichern, um move später zu resetten
-		enterSquare = board.iloc[move[0],move[1]]
-
-		# Zug ausführen (Quellfeld = "--" und Zielfeld = die gewählte Figur)
-		board.iloc[sourceRank,sourceLine] = "--"
-		board.iloc[move[0],move[1]] = piece
+		
+		enterSquare = board.iloc[move[0],move[1]] 	# Inhalt von Zielfeld zwischenspeichern, um move später zu resetten	
+		board.iloc[sourceRank,sourceLine] = "--" 	# Zug ausführen (Quellfeld = "--" ...
+		board.iloc[move[0],move[1]] = piece 		# ... und Zielfeld = die gewählte Figur)
 
 		# Wenn mein König nach dem getesteten legalMove im Schach steht, wird dieser Zug entfernt
 		if isKingInCheck(color):
 			legalMovesV1_copy.remove(move)
-
-		# Nach der Prüfung wird der Zug wieder zurückgenommen (Zielfeld = die Figur, die vorher da stand und Quellfeld = die gewählte Figur)
-		board.iloc[move[0],move[1]] = enterSquare
-		board.iloc[sourceRank,sourceLine] = piece
-
+		
+		board.iloc[move[0],move[1]] = enterSquare # Nach Prüfung Zug zurück (Zielfeld = Figur, die vorher da stand ...
+		board.iloc[sourceRank,sourceLine] = piece # ... und Quellfeld = die gewählte Figur)
+		
 	for lmv1_copy in legalMovesV1_copy:
 		legalMovesV2.append(lmv1_copy)
-
 	return legalMovesV2
 
 
 def checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant) -> list:
 	summand = 7 if piece.startswith("b") else 0 # Für Position: ggü-liegende Reihen/Linien von Schwarz und Weiß ergeben 7
 	factor = -1 if piece.startswith("b") else 1 # Für Zug: (Schlag)Richtung der Bauern von schwarz und weiß haben umgekehrte Vorzeichen
-	# Wenn Bauer in 2. Reihe und beide Felder davor frei => füge Zug hinzu
+	# Wenn Bauer in 2./7. Reihe und beide Felder davor frei => füge Zug hinzu
 	if sourceRank == abs(6-summand) and board.iloc[sourceRank-1*factor,sourceLine] == "--" and board.iloc[sourceRank-2*factor,sourceLine] == "--":
 		legalMovesV1.append([sourceRank-2*factor,sourceLine])
-	# Wenn Bauer in 5. Reihe und links/rechts ein gegn. Bauer steht, der gerade einen Doppelschritt gegangen ist => füge Zug hinzu
+	# Wenn Bauer in 5./4. Reihe und links/rechts ein gegn. Bauer steht, der gerade einen Doppelschritt gegangen ist => füge Zug hinzu
 	elif sourceRank == abs(3-summand) and sourceLine != abs(0-summand) and capturableEnPassant == [sourceRank,sourceLine-1*factor]:
 		legalMovesV1.append([sourceRank-1*factor,sourceLine-1*factor])
 	elif sourceRank == abs(3-summand) and sourceLine != abs(7-summand) and capturableEnPassant == [sourceRank,sourceLine+1*factor]:
@@ -218,22 +207,15 @@ def checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine) -> list:
 			# Bei Läufer müssen die geraden und bei Turm die diagonalen Züge ausgeschlossen werden
 			if ((piece[1] != ("b") and direction in directions[:4]) or (piece[1] != ("r") and direction in directions[4:])):
 				stepRank, stepLine = step*direction[0], step*direction[1]
-
 				if not ((0 <= sourceRank+stepRank <= 7) and (0 <= sourceLine+stepLine <= 7)): break # Index außerhalb => nächste Richtung
-
 				if board.iloc[sourceRank+stepRank,sourceLine+stepLine].startswith(piece[0]): break # Eigene Figur im Weg => nächste Richtung
-
 				if board.iloc[sourceRank+stepRank,sourceLine+stepLine].startswith(otherColor(piece)): # Gegner im Weg => Zug hinzu + nächste Richtung
 					legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
 					break
-
 				if board.iloc[sourceRank+stepRank,sourceLine+stepLine] == "--": # Feld frei => Zug hinzu + nächster Schritt
 					legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
-
 				if piece[1] in ("k","n"): break # König/Springer kann nur einen Schritt gehen, daher Abbruch vor 2. step
-
 			else: break
-
 	return legalMovesV1
 
 # ====================================================================================================
@@ -261,7 +243,7 @@ def promote(piece,targetRank,playerWhite,playerBlack) -> tuple:
 def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant) -> bool:
 	hasTakenPiece = False
 	backRank = 7 if piece.startswith("w") else 0
-
+	
 	# kurze Rochade / lange Rochade
 	if piece.endswith("k") and shortCastlingRight and (targetLine == 6 or targetLine == 7):
 		board.iloc[backRank,4] = "--"
@@ -274,14 +256,12 @@ def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,target
 		board.iloc[backRank,2] = piece[0]+"k"
 		board.iloc[backRank,0] = "--"
 		board.iloc[backRank,3] = piece[0]+"r"
-
-	# Jeder Zug, der keine Rochade ist. Altes Feld räumen, neues Feld mit gezogener Figur besetzen
-	else:
+	
+	else: # Jeder Zug, der keine Rochade ist. Altes Feld räumen, neues Feld mit gezogener Figur besetzen
 		board.iloc[sourceRank,sourceLine] = "--"
 		board.iloc[targetRank,targetLine] = piece
-
-	# Wenn auf Zielfeld Gegner steht => Schlagzug
-	if board.iloc[targetRank,targetLine][0] == otherColor(piece): hasTakenPiece = True
+	
+	if board.iloc[targetRank,targetLine][0] == otherColor(piece): hasTakenPiece = True # Wenn auf Zielfeld Gegner steht => Schlagzug
 
 	enpassantRank = 3 if piece.startswith("w") else 4
 	# Wenn enPassant möglich war UND ich weißen Bauer hatte UND ich auf 5. Reihe stand UND Spalte Zielfeld war Spalte gegenerischer Bauer
@@ -342,22 +322,18 @@ def selectPlayerType(playerColor) -> str:
 
 
 def startGame():
-	# Zughstorie / Bauern, die der Ziehende enPassant schlagen kann / Weiß beginnt
-	moveHistory 		= []
-	capturableEnPassant = []
-	color 				= "w"
+	moveHistory 		= []  # Zughstorie
+	capturableEnPassant = []  # Bauern, die der Ziehende enPassant schlagen kann
+	color 				= "w" # Weiß beginnt
 
 	print("\nWelcome to my chess game!")
-	# playerWhite = selectPlayerType("White")
-	# playerBlack = selectPlayerType("Black")
-	playerWhite = "human"
-	playerBlack = "human"
+	playerWhite = selectPlayerType("White")
+	playerBlack = selectPlayerType("Black")
 	print(board)
 
 	while True:
-		# Vor jedem Zug prüfen: Mein König im Schach? Remisstellung? Mattstellung?
-		kingInCheck = isKingInCheck(color)
-		checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant)
+		kingInCheck = isKingInCheck(color) # Mein König im Schach?
+		checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant) # Remis-/Mattstellung?
 
 		print("\n"+("White" if color == "w" else "Black")+" to move:")
 		while True:
@@ -369,17 +345,15 @@ def startGame():
 			# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 2. Zeichen 1-8
 			if len(sourceSquare) != 2 or sourceSquare[0] not in LETTERS or sourceSquare[1] not in NUMBERS: continue
 
-			# Definition Funktionsparameter: sourceRank / sourceLine
-			piece 	= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur auf "From"-Feld, z.B. "wp" oder "bp"s
+			piece 	= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur auf "From"-Feld, z.B. "wp" oder "bp"
 			sourceRank 	= int(NUMBERS.index(sourceSquare[1]))		# Zahl/Reihe in Indexform [0-7]
 			sourceLine 	= int(LETTERS.index(sourceSquare[0]))		# Buchstabe/Linie in Indexform [0-7]
+			
+			if piece[0] != color: continue # Wenn Farbe am Zug != Farbe der zu bewegenden Figur
 
-			# Wenn Farbe am Zug != Farbe der zu bewegenden Figur
-			if piece[0] != color: continue
-
-			# Prüfe Züge ohne Beachtung von Schach / ggf. füge Rochadezüge hinzu ohne Beachtung von Schach / ggf. entferne Züge, bei denen der König danach im Schach stehen würde
+			# Prüfe Züge ohne Beachtung von Schach / ggf. füge Rochadezüge hinzu ohne Beachtung von Schach / ggf. entferne Züge, nach denen der König im Schach
 			legalMovesV1 		= []
-			legalMovesV1 		= checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)	
+			legalMovesV1 		= checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
 			legalMovesV1,\
 			shortCastlingRight,\
 			longCastlingRight 	= checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory)
@@ -399,15 +373,12 @@ def startGame():
 			if (playerWhite == "engine" and color == "w") or (playerBlack == "engine" and color == "b"):
 				targetSquare = LETTERS[random.randint(0,7)]+NUMBERS[random.randint(0,7)]
 
-			# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 1. Zeichen 1-8
 			if len(targetSquare) != 2 or targetSquare[0] not in LETTERS or targetSquare[1] not in NUMBERS: continue
 
-			# Defintion Prüfparameter: targetRank / targetLine
 			targetRank 	= int(NUMBERS.index(targetSquare[1]))
 			targetLine 	= int(LETTERS.index(targetSquare[0]))
-
-			# Wiederholung Eingabe, wenn Zielfeld nicht legal
-			if [targetRank,targetLine] not in legalMovesV2: continue
+			
+			if [targetRank,targetLine] not in legalMovesV2: continue # Wiederholung Eingabe, wenn Zielfeld nicht legal
 
 			# Bei Engine wird gewähltes Feld jetzt ausgegeben, also erst nachdem legales Feld gefunden wurde
 			if (playerWhite == "engine" and color == "w") or (playerBlack == "engine" and color == "b"):
@@ -421,8 +392,7 @@ def startGame():
 			break
 
 		print()
-		print(board)
-		
+		print(board)		
 		color = "w" if color == "b" else "b" # Farbe wechseln
 
 if __name__=="__main__":
