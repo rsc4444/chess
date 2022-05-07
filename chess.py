@@ -233,7 +233,7 @@ def checkLegalMovesRookBishopQueenKing(piece,legalMovesV1,sourceRank,sourceLine)
 					legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
 
 				if piece[1] == "k": break # König kann nur ein Schritt gehen, daher Abbruch vor 2. step
-				
+
 			else: break
 
 	return legalMovesV1
