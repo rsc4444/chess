@@ -141,7 +141,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 			# 1. Königsschritt gehen (Zwischenschritt)
 			board.iloc[backRank,abs(4-summand08)] = "--"
 			board.iloc[backRank,abs(5-summand08)] = color+"k"			
-			if isKingInCheck(color): # Wenn K im Schach => Rochadezug entf. + Ausgangsstellumg wiederherstellen + nächster Zug
+			if isKingInCheck(color): # Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
 				legalMovesV1_copy.remove(move)
 				board.iloc[backRank,abs(5-summand08)] = "--"
 				board.iloc[backRank,abs(4-summand08)] = color+"k"
@@ -204,8 +204,8 @@ def checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine) -> list:
 			# Bei Läufer müssen die geraden und bei Turm die diagonalen Züge ausgeschlossen werden
 			if ((piece[1] != ("b") and direction in directions[:4]) or (piece[1] != ("r") and direction in directions[4:])):
 				stepRank, stepLine = step*direction[0], step*direction[1]
-				if not ((0 <= sourceRank+stepRank <= 7) and (0 <= sourceLine+stepLine <= 7)): break # Index außerhalb => nächste Richtung
-				if board.iloc[sourceRank+stepRank,sourceLine+stepLine].startswith(piece[0]): break # Eigene Figur im Weg => nächste Richtung
+				if not ((0 <= sourceRank+stepRank <= 7) and (0 <= sourceLine+stepLine <= 7)): break   # Index außerhalb => nächste Richtung
+				if board.iloc[sourceRank+stepRank,sourceLine+stepLine].startswith(piece[0]): break 	  # Eigene Figur im Weg => nächste Richtung
 				if board.iloc[sourceRank+stepRank,sourceLine+stepLine].startswith(otherColor(piece)): # Gegner im Weg => Zug hinzu + nächste Richtung
 					legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
 					break
@@ -229,7 +229,7 @@ def promote(piece,targetRank,playerWhite,playerBlack) -> tuple:
 	if piece.endswith("p") and targetRank in [0,7]:
 		if (playerWhite == "human" and piece.startswith("w")) or (playerBlack == "human" and piece.startswith("b")):
 			piece = piece[0] + input("\nPromote to:\nq (Queen)\nr (Rook)\nb (Bishop)\nn (Knight)\n")
-		if (playerWhite == "engine" and piece.startswith("w")) or (playerBlack == "engine" and piece.startswith("b")):
+		elif (playerWhite == "engine" and piece.startswith("w")) or (playerBlack == "engine" and piece.startswith("b")):
 			print("\nPromote to:\nq (Queen)\nr (Rook)\nb (Bishop)\nn (Knight)\n")
 			piece = piece[0] + random.choice(["q","r","b","n"])
 			print(piece[1]+"\n")
@@ -241,20 +241,20 @@ def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,target
 	hasTakenPiece = False
 	backRank = 7 if piece.startswith("w") else 0
 	
-	# kurze Rochade / lange Rochade
-	if piece.endswith("k") and shortCastlingRight and (targetLine == 6 or targetLine == 7):
+	# kurze / lange Rochade
+	if piece.endswith("k") and shortCastlingRight and targetLine in [6,7]:
 		board.iloc[backRank,4] = "--"
 		board.iloc[backRank,6] = piece[0]+"k"
 		board.iloc[backRank,7] = "--"
 		board.iloc[backRank,5] = piece[0]+"r"
 
-	elif piece.endswith("k") and longCastlingRight and (targetLine == 0 or targetLine == 2):
+	elif piece.endswith("k") and longCastlingRight and targetLine in [0,2]:
 		board.iloc[backRank,4] = "--"
 		board.iloc[backRank,2] = piece[0]+"k"
 		board.iloc[backRank,0] = "--"
 		board.iloc[backRank,3] = piece[0]+"r"
 	
-	else: # Jeder Zug, der keine Rochade ist. Altes Feld räumen, neues Feld mit gezogener Figur besetzen
+	else: # Jeder Nich-Rochade-Zug. Altes Feld räumen, neues Feld mit gezogener Figur besetzen
 		board.iloc[sourceRank,sourceLine] = "--"
 		board.iloc[targetRank,targetLine] = piece
 	
