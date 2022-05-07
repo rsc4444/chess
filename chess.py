@@ -7,14 +7,14 @@ import sys
 # ====================================================================================================
 
 board = [
-["br","--","--","br","bk","--","--","br"],
+["--","--","--","--","bk","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
-["wr","--","--","--","wk","--","--","wr"],
+["--","--","--","--","wk","wr","--","--"],
 ]
 
 LETTERS 		= ("a","b","c","d","e","f","g","h")
@@ -323,8 +323,7 @@ def startGame():
 	color 				= "w" # Weiß beginnt
 
 	print("\nWelcome to my chess game!")
-	playerWhite = selectPlayerType("White")
-	playerBlack = selectPlayerType("Black")
+	playerWhite, playerBlack = selectPlayerType("White"), selectPlayerType("Black")
 	print(board)
 
 	while True:
@@ -387,8 +386,7 @@ def startGame():
 			moveHistory.append([piece,sourceSquare,targetSquare,hasTakenPiece,promotion])
 			break
 
-		print()
-		print(board)		
+		print("\n",board)		
 		color = "w" if color == "b" else "b" # Farbe wechseln
 
 if __name__=="__main__":
