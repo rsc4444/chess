@@ -212,7 +212,7 @@ def checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPa
 
 
 def checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine) -> list:
-	directions = directions_n if piece[1] == "n" else directions_rbqk
+	directions = directions_n if piece[1] == "n" else directions_rbqk # Springer hat andere Richtungen als der Rest der Figuren
 	for direction in directions:
 		for step in range(1,8):
 			# Bei Läufer müssen die geraden und bei Turm die diagonalen Züge ausgeschlossen werden
