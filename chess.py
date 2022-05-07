@@ -125,12 +125,10 @@ def checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory) -> tuple:
 # ====================================================================================================
 
 def checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant) -> list:
-	if piece[1] in ["p"]:
-		legalMovesV1 = checkLegalMovesPawn(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
-	elif piece[1] in ["r","b","q","k"]:
-		legalMovesV1 = checkLegalMovesRookBishopQueenKing(piece,legalMovesV1,sourceRank,sourceLine)
-	elif piece[1] in ["n"]:
-		legalMovesV1 = checkLegalMovesKnight(piece,legalMovesV1,sourceRank,sourceLine)
+	if piece[1] == ["p"]:
+		legalMovesV1 = checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
+	else:
+		legalMovesV1 = checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine)
 	return legalMovesV1
 
 
@@ -193,7 +191,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 	return legalMovesV2
 
 
-def checkLegalMovesPawn(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant) -> list:
+def checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant) -> list:
 	summand = 7 if piece.startswith("b") else 0 # Für Position: ggü-liegende Reihen/Linien von Schwarz und Weiß ergeben 7
 	factor = -1 if piece.startswith("b") else 1 # Für Zug: (Schlag)Richtung der Bauern von schwarz und weiß haben umgekehrte Vorzeichen
 	# Wenn Bauer in 2. Reihe und beide Felder davor frei => füge Zug hinzu
@@ -214,11 +212,12 @@ def checkLegalMovesPawn(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPas
 	return legalMovesV1
 
 
-def checkLegalMovesRookBishopQueenKing(piece,legalMovesV1,sourceRank,sourceLine) -> list:
-	for direction in DIRECTIONS_RBQK:
+def checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine) -> list:
+	DIRECTIONS = DIRECTIONS_N if piece[1] == "n" else DIRECTIONS_RBQK
+	for direction in DIRECTIONS:
 		for step in range(1,8):
 			# wenn piece = Turm/Dame/König und direction = gerade oder piece = Läufer/Dame/König und direction = diagonal => go | sonst => nächste Richtung
-			if ((piece[1] in ("r","q","k") and direction in DIRECTIONS_RBQK[:4]) or (piece[1] in ("b","q","k") and direction in DIRECTIONS_RBQK[4:])):
+			if ((piece[1] != ("b") and direction in DIRECTIONS[:4]) or (piece[1] != ("r") and direction in DIRECTIONS[4:])):
 				stepRank, stepLine = step*direction[0], step*direction[1]
 
 				if not ((0 <= sourceRank+stepRank <= 7) and (0 <= sourceLine+stepLine <= 7)): break # Index außerhalb => nächste Richtung
@@ -232,27 +231,9 @@ def checkLegalMovesRookBishopQueenKing(piece,legalMovesV1,sourceRank,sourceLine)
 				if board.iloc[sourceRank+stepRank,sourceLine+stepLine] == "--": # Feld frei => Zug hinzu + nächster Schritt
 					legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
 
-				if piece[1] == "k": break # König kann nur ein Schritt gehen, daher Abbruch vor 2. step
+				if piece[1] in ("k","n"): break # König/Springer kann nur einen Schritt gehen, daher Abbruch vor 2. step
 
 			else: break
-
-	return legalMovesV1
-
-
-def checkLegalMovesKnight(piece,legalMovesV1,sourceRank,sourceLine) -> list:
-	for direction in DIRECTIONS_N:
-		stepRank, stepLine = direction
-
-		if not ((0 <= sourceRank+stepRank <= 7) and (0 <= sourceLine+stepLine <= 7)): continue # Index außerhalb => nächste Richtung
-
-		if board.iloc[sourceRank+stepRank,sourceLine+stepLine].startswith(piece[0]): continue # Eigene Figur im Weg => nächste Richtung
-
-		if board.iloc[sourceRank+stepRank,sourceLine+stepLine].startswith(otherColor(piece)): # Gegner im Weg => Zug hinzu + nächste Richtung
-			legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
-			continue
-
-		if board.iloc[sourceRank+stepRank,sourceLine+stepLine] == "--": # Feld frei => Zug hinzu + nächste Richtung
-			legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
 
 	return legalMovesV1
 
