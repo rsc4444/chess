@@ -1,4 +1,3 @@
-import copy
 import pandas as pd
 import random
 import sys
@@ -20,8 +19,8 @@ board = [
 
 LETTERS 		= ("a","b","c","d","e","f","g","h")
 NUMBERS 		= ("8","7","6","5","4","3","2","1")
-DIRECTIONS_RBQK = [(-1,0),(+1,0),(0,+1),(0,-1),(-1,+1),(+1,-1),(+1,+1),(-1,-1)]
-DIRECTIONS_N 	= [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
+directions_rbqk = [(-1,0),(+1,0),(0,+1),(0,-1),(-1,+1),(+1,-1),(+1,+1),(-1,-1)]
+directions_n 	= [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
 board 			= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
 boardCopy 		= []
 
@@ -132,8 +131,8 @@ def checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassa
 	return legalMovesV1
 
 
-def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine) -> list:	
-	legalMovesV1_copy = copy.copy(legalMovesV1) # call-by-value, daher copy
+def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine) -> list:
+	legalMovesV1_copy = legalMovesV1.copy() # call-by-value, daher copy
 	backRank = 7 if color == "w" else 0 # (Grund)reihe in Abhängigkeit von Farbe (schwarz/weiß)
 
 	# "checkCastleMovesV2" || Prüfung, ob Rochadezug vorliegt und ob diese durchgeführt werden kann (König darf nicht ins Schach)
@@ -213,11 +212,11 @@ def checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPa
 
 
 def checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine) -> list:
-	DIRECTIONS = DIRECTIONS_N if piece[1] == "n" else DIRECTIONS_RBQK
-	for direction in DIRECTIONS:
+	directions = directions_n if piece[1] == "n" else directions_rbqk
+	for direction in directions:
 		for step in range(1,8):
-			# wenn piece = Turm/Dame/König und direction = gerade oder piece = Läufer/Dame/König und direction = diagonal => go | sonst => nächste Richtung
-			if ((piece[1] != ("b") and direction in DIRECTIONS[:4]) or (piece[1] != ("r") and direction in DIRECTIONS[4:])):
+			# Bei Läufer müssen die geraden und bei Turm die diagonalen Züge ausgeschlossen werden
+			if ((piece[1] != ("b") and direction in directions[:4]) or (piece[1] != ("r") and direction in directions[4:])):
 				stepRank, stepLine = step*direction[0], step*direction[1]
 
 				if not ((0 <= sourceRank+stepRank <= 7) and (0 <= sourceLine+stepLine <= 7)): break # Index außerhalb => nächste Richtung
