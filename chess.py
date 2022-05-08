@@ -26,7 +26,6 @@ board 			= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
 boardCopy 		= []
 # fen
 # else in lmpieces kommentieren
-# bauernzug kontrollieren
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
@@ -219,7 +218,7 @@ def checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine) -> list:
 				if board.iloc[sourceRank+stepRank,sourceLine+stepLine] == "--": # Feld frei => Zug hinzu + nächster Schritt
 					legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
 				if piece[1] in ("k","n"): break # König/Springer kann nur einen Schritt gehen, daher Abbruch vor 2. step
-			else: break
+			else: break # WARUM ?????? Komemtar hier
 	return legalMovesV1
 
 # ====================================================================================================
