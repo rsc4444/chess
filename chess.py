@@ -45,7 +45,8 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 	for sourceRank in range(8):
 		for sourceLine in range(8):
 			piece = board.iloc[sourceRank,sourceLine]
-			if piece.endswith("p") or piece.endswith("q") or piece.endswith("r"): # Bauer / Dame / Turm
+			if piece == "--": continue
+			elif piece.endswith("p") or piece.endswith("q") or piece.endswith("r"): # Bauer / Dame / Turm
 				totalValuePieces += 9
 			elif piece.endswith("n"): # Springer
 				totalValuePieces += 3
@@ -291,6 +292,7 @@ def isUnderAttack(color,myRank,myLine) -> bool:
 	dangerFields 	= []
 	factor 			= -1 if color == "b" else 1
 
+
 	# wenn Feld links oben bzw. rechts oben innerhalb Brett => Feld speichern und später prüfen, ob da gegn. Bauer steht
 	if ((0 <= myRank-1*factor <= 7) and (0 <= myLine-1*factor <= 7)):
 		dangerFields.append([myRank-1*factor,myLine-1*factor])
@@ -302,7 +304,7 @@ def isUnderAttack(color,myRank,myLine) -> bool:
 	# Wenn in solch einem Feld die jeweilige gegnerische Figur steht => König angegriffen => return True; sonst return False
 	for shortcut in ["r","b","q","n","k"]:  # Turm / Läufer / Dame / Springer / König
 		piece = color+shortcut
-		dangerFields = []
+		dangerFields.clear()
 		# dangerFields = checkLegalMovesV1(piece,dangerFields,myRank,myLine,capturableEnPassant=[])
 		dangerFields = checkLegalMovesPieces(piece,dangerFields,myRank,myLine)
 		if attackedByOpponent(dangerFields,piece): return True
@@ -324,6 +326,9 @@ def startGame():
 	moveHistory 		= []  # Zughstorie
 	capturableEnPassant = []  # Bauern, die der Ziehende enPassant schlagen kann
 	color 				= "w" # Weiß beginnt
+	legalMovesV1		= []
+	legalMovesV2		= []
+
 
 	print("\nWelcome to my chess game!")
 	playerWhite, playerBlack = selectPlayerType("White"), selectPlayerType("Black")
@@ -339,7 +344,7 @@ def startGame():
 			if (playerWhite == "human" and color == "w") or (playerBlack == "human" and color == "b"):
 				sourceSquare = input("From: ")
 			if (playerWhite == "engine" and color == "w") or (playerBlack == "engine" and color == "b"):
-				sourceSquare = LETTERS[random.randint(0,7)]+NUMBERS[random.randint(0,7)]
+				sourceSquare = random.choice(LETTERS)+random.choice(NUMBERS)
 
 			# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 2. Zeichen 1-8
 			if len(sourceSquare) != 2 or sourceSquare[0] not in LETTERS or sourceSquare[1] not in NUMBERS: continue
@@ -351,12 +356,12 @@ def startGame():
 			if piece[0] != color: continue # Wenn Farbe am Zug != Farbe der zu bewegenden Figur
 
 			# Prüfe Züge ohne Beachtung von Schach / ggf. füge Rochadezüge hinzu ohne Beachtung von Schach / ggf. entferne Züge, nach denen der König im Schach
-			legalMovesV1 		= []
+			legalMovesV1.clear()
 			legalMovesV1 		= checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
 			legalMovesV1,\
 			shortCastlingRight,\
 			longCastlingRight 	= checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory)
-			legalMovesV2 		= []
+			legalMovesV2.clear()
 			legalMovesV2 		= checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine)
 
 			# Weiter gehts nur, wenn legaler Zug mit der Figur möglich, sonst Wdh. Eingabe (break)
@@ -370,7 +375,7 @@ def startGame():
 			if (playerWhite == "human" and color == "w") or (playerBlack == "human" and color == "b"):
 				targetSquare = input("To: ")
 			if (playerWhite == "engine" and color == "w") or (playerBlack == "engine" and color == "b"):
-				targetSquare = LETTERS[random.randint(0,7)]+NUMBERS[random.randint(0,7)]
+				targetSquare = random.choice(LETTERS)+random.choice(NUMBERS)
 
 			if len(targetSquare) != 2 or targetSquare[0] not in LETTERS or targetSquare[1] not in NUMBERS: continue
 
