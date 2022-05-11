@@ -322,13 +322,30 @@ def selectPlayerType(playerColor) -> str:
 		elif playerType == "e": return "engine"
 
 
+def getPlayerCoords(playerWhite, playerBlack, color, inputMessage, mode):
+	while True:
+		if (playerWhite == "human" and color == "w") or (playerBlack == "human" and color == "b"):
+			inp = input(f"{inputMessage}: ")
+		elif (playerWhite == "engine" and color == "w") or (playerBlack == "engine" and color == "b"):
+			inp = random.choice(LETTERS)+random.choice(NUMBERS)
+			
+		# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 2. Zeichen 1-8
+		if len(inp) == 2 and inp[0] in LETTERS and inp[1] in NUMBERS:
+			piece = board.loc[inp[1],inp[0]]  	# Figur auf "From"-Feld, z.B. "wp" oder "bp"
+			rank  = int(NUMBERS.index(inp[1]))  # Zahl/Reihe in Indexform [0-7]
+			line  = int(LETTERS.index(inp[0]))  # Buchstabe/Linie in Indexform [0-7]
+			if mode == 1 and piece[0] == color: # Wenn Farbe am Zug gleich der Farbe der zu bewegenden Figur
+				return (piece, rank, line, inp)
+			elif mode == 2:
+				return (rank, line, inp)
+
+
 def startGame():
 	moveHistory 		= []  # Zughstorie
 	capturableEnPassant = []  # Bauern, die der Ziehende enPassant schlagen kann
 	color 				= "w" # Weiß beginnt
 	legalMovesV1		= []
 	legalMovesV2		= []
-
 
 	print("\nWelcome to my chess game!")
 	playerWhite, playerBlack = selectPlayerType("White"), selectPlayerType("Black")
@@ -341,19 +358,7 @@ def startGame():
 
 		print("\n"+("White" if color == "w" else "Black")+" to move:")
 		while True:
-			if (playerWhite == "human" and color == "w") or (playerBlack == "human" and color == "b"):
-				sourceSquare = input("From: ")
-			if (playerWhite == "engine" and color == "w") or (playerBlack == "engine" and color == "b"):
-				sourceSquare = random.choice(LETTERS)+random.choice(NUMBERS)
-
-			# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 2. Zeichen 1-8
-			if len(sourceSquare) != 2 or sourceSquare[0] not in LETTERS or sourceSquare[1] not in NUMBERS: continue
-
-			piece 	= board.loc[sourceSquare[1],sourceSquare[0]]	# Figur auf "From"-Feld, z.B. "wp" oder "bp"
-			sourceRank 	= int(NUMBERS.index(sourceSquare[1]))		# Zahl/Reihe in Indexform [0-7]
-			sourceLine 	= int(LETTERS.index(sourceSquare[0]))		# Buchstabe/Linie in Indexform [0-7]
-			
-			if piece[0] != color: continue # Wenn Farbe am Zug != Farbe der zu bewegenden Figur
+			piece, sourceRank, sourceLine, sourceSquare = getPlayerCoords(playerWhite, playerBlack, color, "From", 1)
 
 			# Prüfe Züge ohne Beachtung von Schach / ggf. füge Rochadezüge hinzu ohne Beachtung von Schach / ggf. entferne Züge, nach denen der König im Schach
 			legalMovesV1.clear()
@@ -372,15 +377,7 @@ def startGame():
 				break
 
 		while True:
-			if (playerWhite == "human" and color == "w") or (playerBlack == "human" and color == "b"):
-				targetSquare = input("To: ")
-			if (playerWhite == "engine" and color == "w") or (playerBlack == "engine" and color == "b"):
-				targetSquare = random.choice(LETTERS)+random.choice(NUMBERS)
-
-			if len(targetSquare) != 2 or targetSquare[0] not in LETTERS or targetSquare[1] not in NUMBERS: continue
-
-			targetRank 	= int(NUMBERS.index(targetSquare[1]))
-			targetLine 	= int(LETTERS.index(targetSquare[0]))
+			targetRank, targetLine, targetSquare = getPlayerCoords(playerWhite, playerBlack, color, "To", 2)
 			
 			if [targetRank,targetLine] not in legalMovesV2: continue # Wiederholung Eingabe, wenn Zielfeld nicht legal
 
