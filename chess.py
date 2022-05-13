@@ -35,6 +35,7 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 	totalValuePieces 	= 0
 	lightSquaredBishops = 0
 	darkSquaredBishops 	= 0
+	legalMovesV1 		= []
 	legalMovesV2 		= []
 
 	boardCopy.append(board.values.tolist())
@@ -59,7 +60,7 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 
 			# Wenn piece = eigene Figur
 			if piece.startswith(color):
-				legalMovesV1 = []
+				legalMovesV1.clear()
 				legalMovesV1 = checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
 				legalMovesV2 = checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine)
 
@@ -219,7 +220,7 @@ def checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine) -> list:
 				if board.iloc[sourceRank+stepRank,sourceLine+stepLine] == "--": # Feld frei => Zug hinzu + nächster Schritt
 					legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
 				if piece[1] in ("k","n"): break # König/Springer kann nur einen Schritt gehen, daher Abbruch vor 2. step
-			else: break # WARUM ?????? Komemtar hier
+			else: break # WARUM ?????? Kommentar hier
 	return legalMovesV1
 
 # ====================================================================================================
