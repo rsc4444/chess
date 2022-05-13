@@ -323,7 +323,7 @@ def selectPlayerType(playerColor) -> str:
 		elif playerType == "e": return "engine"
 
 
-def getPlayerCoords(playerWhite, playerBlack, color, inputMessage, mode):
+def getPlayerCoords(playerWhite, playerBlack, color, inputMessage):
 	while True:
 		if (playerWhite == "human" and color == "w") or (playerBlack == "human" and color == "b"):
 			inp = input(f"{inputMessage}: ")
@@ -335,9 +335,9 @@ def getPlayerCoords(playerWhite, playerBlack, color, inputMessage, mode):
 			piece = board.loc[inp[1],inp[0]]  	# Figur auf "From"-Feld, z.B. "wp" oder "bp"
 			rank  = int(NUMBERS.index(inp[1]))  # Zahl/Reihe in Indexform [0-7]
 			line  = int(LETTERS.index(inp[0]))  # Buchstabe/Linie in Indexform [0-7]
-			if mode == 1 and piece[0] == color: # Wenn Farbe am Zug gleich der Farbe der zu bewegenden Figur
+			if inputMessage == "From" and piece[0] == color: # Wenn Farbe am Zug gleich der Farbe der zu bewegenden Figur
 				return (piece, rank, line, inp)
-			elif mode == 2:
+			elif inputMessage == "To":
 				return (rank, line, inp)
 
 
@@ -359,7 +359,7 @@ def startGame():
 
 		print("\n"+("White" if color == "w" else "Black")+" to move:")
 		while True:
-			piece, sourceRank, sourceLine, sourceSquare = getPlayerCoords(playerWhite, playerBlack, color, "From", 1)
+			piece, sourceRank, sourceLine, sourceSquare = getPlayerCoords(playerWhite, playerBlack, color, "From")
 
 			# Prüfe Züge ohne Beachtung von Schach / ggf. füge Rochadezüge hinzu ohne Beachtung von Schach / ggf. entferne Züge, nach denen der König im Schach
 			legalMovesV1.clear()
@@ -378,7 +378,7 @@ def startGame():
 				break
 
 		while True:
-			targetRank, targetLine, targetSquare = getPlayerCoords(playerWhite, playerBlack, color, "To", 2)
+			targetRank, targetLine, targetSquare = getPlayerCoords(playerWhite, playerBlack, color, "To")
 			
 			if [targetRank,targetLine] not in legalMovesV2: continue # Wiederholung Eingabe, wenn Zielfeld nicht legal
 
