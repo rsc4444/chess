@@ -137,11 +137,11 @@ def checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassa
 
 
 def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine) -> list:
-	legalMovesV1_copy = legalMovesV1.copy() # call-by-value, daher copy
+	# legalMovesV1_copy = legalMovesV1.copy() # call-by-value, daher copy
 	backRank = 7 if color == "w" else 0 # (Grund)reihe in Abhängigkeit von Farbe (schwarz/weiß)
 
 	# "checkCastleMovesV2" || Prüfung, ob Rochadezug vorliegt und ob diese durchgeführt werden kann (König darf nicht ins Schach)
-	for move in legalMovesV1:
+	for move in legalMovesV1.copy():
 		summand07 = 0 if move in [[backRank,6],[backRank,7]] else 7 # (Grund)reihe in Abhängigkeit von Rochade (kurz/lang)
 		summand08 = 0 if move in [[backRank,6],[backRank,7]] else 8 # Linie in Abhängigkeit von Rochade (kurz/lang)
 		# Beide Rochadezüge (Zielfeld = Königsfeld/Turmfeld) prüfen | Zwischenschritt + Zielfeld dürfen nicht bedroht sein
@@ -150,7 +150,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 			board.iloc[backRank,abs(4-summand08)] = "--"
 			board.iloc[backRank,abs(5-summand08)] = color+"k"			
 			if isKingInCheck(color): # Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
-				legalMovesV1_copy.remove(move)
+				legalMovesV1.remove(move)
 				board.iloc[backRank,abs(5-summand08)] = "--"
 				board.iloc[backRank,abs(4-summand08)] = color+"k"
 				continue			
@@ -158,7 +158,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 				board.iloc[backRank,abs(5-summand08)] = "--"
 				board.iloc[backRank,abs(6-summand08)] = color+"k"				
 				if isKingInCheck(color): # Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
-					legalMovesV1_copy.remove(move)
+					legalMovesV1.remove(move)
 					board.iloc[backRank,abs(6-summand08)] = "--"
 					board.iloc[backRank,abs(4-summand08)] = color+"k"
 					continue				
@@ -174,14 +174,15 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 
 		# Wenn mein König nach dem getesteten legalMove im Schach steht, wird dieser Zug entfernt
 		if isKingInCheck(color):
-			legalMovesV1_copy.remove(move)
+			legalMovesV1.remove(move)
 		
 		board.iloc[move[0],move[1]] = enterSquare # Nach Prüfung Zug zurück (Zielfeld = Figur, die vorher da stand ...
 		board.iloc[sourceRank,sourceLine] = piece # ... und Quellfeld = die gewählte Figur)
 
-	for lmv1_copy in legalMovesV1_copy:
-		legalMovesV2.append(lmv1_copy)
-	return legalMovesV2
+	# for lmv1_copy in legalMovesV1_copy:
+		# legalMovesV2.append(lmv1_copy)
+		# legalMovesV2.append(legalMovesV1_copy)
+	return legalMovesV1
 
 
 def checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant) -> list:
