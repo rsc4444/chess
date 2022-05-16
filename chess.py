@@ -17,17 +17,6 @@ board = [
 ["wr","wn","wb","wq","wk","wb","wn","wr"],
 ]
 
-board = [
-["br","bn","bb","bq","bk","bb","bn","br"],
-["bp","bp","bp","bp","br","bp","bp","bp"],
-["--","--","--","--","--","--","--","--"],
-["--","--","--","--","--","--","--","--"],
-["--","--","--","--","--","--","--","--"],
-["--","--","--","--","--","--","--","--"],
-["wp","wp","wp","wp","wb","wp","wp","wp"],
-["wr","wn","wb","wq","wk","wb","wn","wr"],
-]
-
 LETTERS 		= ("a","b","c","d","e","f","g","h")
 NUMBERS 		= ("8","7","6","5","4","3","2","1")
 DIRECTIONS_RBQK = [(-1,0),(+1,0),(0,+1),(0,-1),(-1,+1),(+1,-1),(+1,+1),(-1,-1)]
@@ -46,6 +35,7 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 	totalValuePieces 	= 0
 	lightSquaredBishops = 0
 	darkSquaredBishops 	= 0
+	legalMovesV1 		= []
 	legalMovesV2 		= []
 
 	boardCopy.append(board.values.tolist())
@@ -70,7 +60,7 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 
 			# Wenn piece = eigene Figur
 			if piece.startswith(color):
-				legalMovesV1 = []
+				legalMovesV1.clear()
 				legalMovesV1 = checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
 				legalMovesV2 = checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine)
 
