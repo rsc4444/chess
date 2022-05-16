@@ -35,7 +35,6 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 	totalValuePieces 	= 0
 	lightSquaredBishops = 0
 	darkSquaredBishops 	= 0
-	legalMovesV1 		= []
 	legalMovesV2 		= []
 
 	boardCopy.append(board.values.tolist())
@@ -60,7 +59,7 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 
 			# Wenn piece = eigene Figur
 			if piece.startswith(color):
-				legalMovesV1.clear()
+				legalMovesV1 = []
 				legalMovesV1 = checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
 				legalMovesV2 = checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine)
 
@@ -73,7 +72,7 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 	if not legalMovesV2 and not kingInCheck:
 		sys.exit("\nStalemate! This is a draw.\n")
 	elif not legalMovesV2 and kingInCheck:
-		sys.exit("\nCheckmate! "+("White" if color == "b" else "Black")+" wins.\n")
+		sys.exit(f"\nCheckmate! {'White' if color == 'w' else 'Black'} wins.\n")
 
 	# Mindestens 50 Züge in Folge kein Bauern- oder Schlagzug oder Umwandlung => Unentschieden.
 	if (len_moveHistory := len(moveHistory)) >= (2*50):
@@ -137,11 +136,11 @@ def checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassa
 
 
 def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine) -> list:
-	# legalMovesV1_copy = legalMovesV1.copy() # call-by-value, daher copy
+	legalMovesV1_copy = legalMovesV1.copy() # call-by-value, daher copy
 	backRank = 7 if color == "w" else 0 # (Grund)reihe in Abhängigkeit von Farbe (schwarz/weiß)
 
 	# "checkCastleMovesV2" || Prüfung, ob Rochadezug vorliegt und ob diese durchgeführt werden kann (König darf nicht ins Schach)
-	for move in legalMovesV1.copy():
+	for move in legalMovesV1:
 		summand07 = 0 if move in [[backRank,6],[backRank,7]] else 7 # (Grund)reihe in Abhängigkeit von Rochade (kurz/lang)
 		summand08 = 0 if move in [[backRank,6],[backRank,7]] else 8 # Linie in Abhängigkeit von Rochade (kurz/lang)
 		# Beide Rochadezüge (Zielfeld = Königsfeld/Turmfeld) prüfen | Zwischenschritt + Zielfeld dürfen nicht bedroht sein
@@ -150,7 +149,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 			board.iloc[backRank,abs(4-summand08)] = "--"
 			board.iloc[backRank,abs(5-summand08)] = color+"k"			
 			if isKingInCheck(color): # Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
-				legalMovesV1.remove(move)
+				legalMovesV1_copy.remove(move)
 				board.iloc[backRank,abs(5-summand08)] = "--"
 				board.iloc[backRank,abs(4-summand08)] = color+"k"
 				continue			
@@ -158,7 +157,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 				board.iloc[backRank,abs(5-summand08)] = "--"
 				board.iloc[backRank,abs(6-summand08)] = color+"k"				
 				if isKingInCheck(color): # Wenn König im Schach => Rochadezug entfernen + Ausgangsstellung wiederherstellen + nächster Zug
-					legalMovesV1.remove(move)
+					legalMovesV1_copy.remove(move)
 					board.iloc[backRank,abs(6-summand08)] = "--"
 					board.iloc[backRank,abs(4-summand08)] = color+"k"
 					continue				
@@ -174,15 +173,14 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 
 		# Wenn mein König nach dem getesteten legalMove im Schach steht, wird dieser Zug entfernt
 		if isKingInCheck(color):
-			legalMovesV1.remove(move)
+			legalMovesV1_copy.remove(move)
 		
 		board.iloc[move[0],move[1]] = enterSquare # Nach Prüfung Zug zurück (Zielfeld = Figur, die vorher da stand ...
 		board.iloc[sourceRank,sourceLine] = piece # ... und Quellfeld = die gewählte Figur)
 
-	# for lmv1_copy in legalMovesV1_copy:
-		# legalMovesV2.append(lmv1_copy)
-		# legalMovesV2.append(legalMovesV1_copy)
-	return legalMovesV1
+	for lmv1_copy in legalMovesV1_copy:
+		legalMovesV2.append(lmv1_copy)
+	return legalMovesV2
 
 
 def checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant) -> list:
@@ -221,7 +219,7 @@ def checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine) -> list:
 				if board.iloc[sourceRank+stepRank,sourceLine+stepLine] == "--": # Feld frei => Zug hinzu + nächster Schritt
 					legalMovesV1.append([sourceRank+stepRank,sourceLine+stepLine])
 				if piece[1] in ("k","n"): break # König/Springer kann nur einen Schritt gehen, daher Abbruch vor 2. step
-			else: break # WARUM ?????? Kommentar hier
+			else: break # Richtung passt nicht zur Figur => nächste Richtung
 	return legalMovesV1
 
 # ====================================================================================================
@@ -294,7 +292,6 @@ def isUnderAttack(color,myRank,myLine) -> bool:
 	dangerFields 	= []
 	factor 			= -1 if color == "b" else 1
 
-
 	# wenn Feld links oben bzw. rechts oben innerhalb Brett => Feld speichern und später prüfen, ob da gegn. Bauer steht
 	if ((0 <= myRank-1*factor <= 7) and (0 <= myLine-1*factor <= 7)):
 		dangerFields.append([myRank-1*factor,myLine-1*factor])
@@ -307,7 +304,6 @@ def isUnderAttack(color,myRank,myLine) -> bool:
 	for shortcut in ["r","b","q","n","k"]:  # Turm / Läufer / Dame / Springer / König
 		piece = color+shortcut
 		dangerFields.clear()
-		# dangerFields = checkLegalMovesV1(piece,dangerFields,myRank,myLine,capturableEnPassant=[])
 		dangerFields = checkLegalMovesPieces(piece,dangerFields,myRank,myLine)
 		if attackedByOpponent(dangerFields,piece): return True
 		
@@ -358,7 +354,7 @@ def startGame():
 		kingInCheck = isKingInCheck(color) # Mein König im Schach?
 		checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant) # Remis-/Mattstellung?
 
-		print("\n"+("White" if color == "w" else "Black")+" to move:")
+		print(f"\n{'White' if color == 'w' else 'Black'} to move:")
 		while True:
 			piece, sourceRank, sourceLine, sourceSquare = getPlayerCoords(playerWhite, playerBlack, color, "From")
 
@@ -395,7 +391,7 @@ def startGame():
 			break
 
 		print()
-		print(board)		
+		print(board)
 		color = "w" if color == "b" else "b" # Farbe wechseln
 
 if __name__=="__main__":
