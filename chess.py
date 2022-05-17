@@ -328,9 +328,9 @@ def getPlayerCoords(playerWhite, playerBlack, color, inputMessage):
 			
 		# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 2. Zeichen 1-8
 		if len(inp) == 2 and inp[0] in LETTERS and inp[1] in NUMBERS:
-			piece = board.loc[inp[1],inp[0]]  			# Figur auf "From"-Feld, z.B. "wp" oder "bp"
-			rank  = int(NUMBERS.index(inp[1]))  			# Zahl/Reihe in Indexform [0-7]
-			line  = int(LETTERS.index(inp[0]))  			# Buchstabe/Linie in Indexform [0-7]
+			piece = board.loc[inp[1],inp[0]]  					# Figur auf "From"-Feld, z.B. "wp" oder "bp"
+			rank  = int(NUMBERS.index(inp[1]))  				# Zahl/Reihe in Indexform [0-7]
+			line  = int(LETTERS.index(inp[0]))  				# Buchstabe/Linie in Indexform [0-7]
 			if inputMessage == "From" and piece[0] == color: 	# Wenn Farbe am Zug gleich der Farbe der zu bewegenden Figur
 				return (piece, rank, line, inp)
 			elif inputMessage == "To":
