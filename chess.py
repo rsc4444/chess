@@ -17,15 +17,14 @@ board = [
 ["wr","wn","wb","wq","wk","wb","wn","wr"],
 ]
 
-LETTERS 		= ("a","b","c","d","e","f","g","h")
-NUMBERS 		= ("8","7","6","5","4","3","2","1")
+LETTERS 	= ("a","b","c","d","e","f","g","h")
+NUMBERS 	= ("8","7","6","5","4","3","2","1")
 DIRECTIONS_RBQK = [(-1,0),(+1,0),(0,+1),(0,-1),(-1,+1),(+1,-1),(+1,+1),(-1,-1)]
 DIRECTIONS_N 	= [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
-OTHERCOLOR 		= {"w":"b","b":"w"}
-board 			= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
-boardCopy 		= []
-# fen
-# else in lmpieces kommentieren
+OTHERCOLOR 	= {"w":"b","b":"w"}
+board 		= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
+boardCopy 	= []
+# FEN
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
@@ -33,7 +32,7 @@ boardCopy 		= []
 
 def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant):
 	totalValuePieces 	= 0
-	lightSquaredBishops = 0
+	lightSquaredBishops 	= 0
 	darkSquaredBishops 	= 0
 	legalMovesV1 		= []
 	legalMovesV2 		= []
@@ -288,9 +287,9 @@ def attackedByOpponent(dangerFields,piece) -> bool:
 
 
 def isUnderAttack(color,myRank,myLine) -> bool:
-	piece 			= color+"p" # Bauer
+	piece 		= color+"p" # Bauer
 	dangerFields 	= []
-	factor 			= -1 if color == "b" else 1
+	factor 		= -1 if color == "b" else 1
 
 	# wenn Feld links oben bzw. rechts oben innerhalb Brett => Feld speichern und später prüfen, ob da gegn. Bauer steht
 	if ((0 <= myRank-1*factor <= 7) and (0 <= myLine-1*factor <= 7)):
@@ -329,9 +328,9 @@ def getPlayerCoords(playerWhite, playerBlack, color, inputMessage):
 			
 		# Eingabe muss aus zwei Zeichen bestehen: 1. Zeichen a-h und 2. Zeichen 1-8
 		if len(inp) == 2 and inp[0] in LETTERS and inp[1] in NUMBERS:
-			piece = board.loc[inp[1],inp[0]]  					# Figur auf "From"-Feld, z.B. "wp" oder "bp"
-			rank  = int(NUMBERS.index(inp[1]))  				# Zahl/Reihe in Indexform [0-7]
-			line  = int(LETTERS.index(inp[0]))  				# Buchstabe/Linie in Indexform [0-7]
+			piece = board.loc[inp[1],inp[0]]  			# Figur auf "From"-Feld, z.B. "wp" oder "bp"
+			rank  = int(NUMBERS.index(inp[1]))  			# Zahl/Reihe in Indexform [0-7]
+			line  = int(LETTERS.index(inp[0]))  			# Buchstabe/Linie in Indexform [0-7]
 			if inputMessage == "From" and piece[0] == color: 	# Wenn Farbe am Zug gleich der Farbe der zu bewegenden Figur
 				return (piece, rank, line, inp)
 			elif inputMessage == "To":
@@ -340,8 +339,8 @@ def getPlayerCoords(playerWhite, playerBlack, color, inputMessage):
 
 def startGame():
 	moveHistory 		= []  # Zughstorie
-	capturableEnPassant = []  # Bauern, die der Ziehende enPassant schlagen kann
-	color 				= "w" # Weiß beginnt
+	capturableEnPassant 	= []  # Bauern, die der Ziehende enPassant schlagen kann
+	color 			= "w" # Weiß beginnt
 	legalMovesV1		= []
 	legalMovesV2		= []
 
