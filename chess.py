@@ -17,13 +17,13 @@ board = [
 ["wr","wn","wb","wq","wk","wb","wn","wr"],
 ]
 
-LETTERS 	= ("a","b","c","d","e","f","g","h")
-NUMBERS 	= ("8","7","6","5","4","3","2","1")
+LETTERS 		= ("a","b","c","d","e","f","g","h")
+NUMBERS 		= ("8","7","6","5","4","3","2","1")
 DIRECTIONS_RBQK = [(-1,0),(+1,0),(0,+1),(0,-1),(-1,+1),(+1,-1),(+1,+1),(-1,-1)]
 DIRECTIONS_N 	= [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)]
-OTHERCOLOR 	= {"w":"b","b":"w"}
-board 		= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
-boardCopy 	= []
+OTHERCOLOR 		= {"w":"b","b":"w"}
+board 			= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
+boardCopy 		= []
 # FEN
 
 # ====================================================================================================
@@ -32,7 +32,7 @@ boardCopy 	= []
 
 def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant):
 	totalValuePieces 	= 0
-	lightSquaredBishops 	= 0
+	lightSquaredBishops = 0
 	darkSquaredBishops 	= 0
 	legalMovesV1 		= []
 	legalMovesV2 		= []
@@ -287,9 +287,9 @@ def attackedByOpponent(dangerFields,piece) -> bool:
 
 
 def isUnderAttack(color,myRank,myLine) -> bool:
-	piece 		= color+"p" # Bauer
+	piece 			= color+"p" # Bauer
 	dangerFields 	= []
-	factor 		= -1 if color == "b" else 1
+	factor 			= -1 if color == "b" else 1
 
 	# wenn Feld links oben bzw. rechts oben innerhalb Brett => Feld speichern und später prüfen, ob da gegn. Bauer steht
 	if ((0 <= myRank-1*factor <= 7) and (0 <= myLine-1*factor <= 7)):
@@ -339,8 +339,8 @@ def getPlayerCoords(playerWhite, playerBlack, color, inputMessage):
 
 def startGame():
 	moveHistory 		= []  # Zughstorie
-	capturableEnPassant 	= []  # Bauern, die der Ziehende enPassant schlagen kann
-	color 			= "w" # Weiß beginnt
+	capturableEnPassant = []  # Bauern, die der Ziehende enPassant schlagen kann
+	color 				= "w" # Weiß beginnt
 	legalMovesV1		= []
 	legalMovesV2		= []
 
