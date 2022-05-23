@@ -25,6 +25,11 @@ OTHERCOLOR 		= {"w":"b","b":"w"}
 board 			= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
 boardCopy 		= []
 # FEN
+# Aufgabe moveHistory ([piece,sourceSquare,targetSquare,hasTakenPiece,promotion])
+	# Bauernzug (piece), Schlagzug (hasTakenPiece), Umwandlungszug (promotion) in letzten 50 Zügen dokumentieren
+	# gucken, ob König oder Turm im gesamten Spiel schon bewegt wurden (sourceSquare,targetSquare). Für Rochadecheck.
+# Aufgabe boardCopy
+	# gucken, ob im gesamten Spiel eine Stellung schonmal erreicht wurde (wenn sich Rochaderecht geändert hat, dann neue Stellung)
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
