@@ -25,11 +25,27 @@ OTHERCOLOR 		= {"w":"b","b":"w"}
 board 			= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
 boardCopy 		= []
 # FEN
+
+# Aufgabe capturableEnPassant
+	# (Falls vorhanden): Speichern des Feldes mit dem eigenen Bauern, der als Nächstes vom Gegner enpassant geschlagen werden kann
+
 # Aufgabe moveHistory ([piece,sourceSquare,targetSquare,hasTakenPiece,promotion])
 	# Bauernzug (piece), Schlagzug (hasTakenPiece), Umwandlungszug (promotion) in letzten 50 Zügen dokumentieren
 	# gucken, ob König oder Turm im gesamten Spiel schon bewegt wurden (sourceSquare,targetSquare). Für Rochadecheck.
+
 # Aufgabe boardCopy
 	# gucken, ob im gesamten Spiel eine Stellung schonmal erreicht wurde (wenn sich Rochaderecht geändert hat, dann neue Stellung)
+
+# Informationen FEN
+	# 1. Figurenstellung
+		# (zusammen mit 3. deckt das die Aufgabe der boardCopy ab)
+	# 2. Zugrecht
+	# 3. Rochaderechte
+		# (zusammen mit 1. deckt das die Aufgabe der boardCopy ab)
+	# 4. Möglicher En-Passant-Schlag
+		# zeigt Feld an, das ich mit einem enpassant-Schlag betreten kann (natürlich nur mit Bauer aus benachbarter Linie möglich)
+	# 5. Gespielte Halbzüge seit dem letzten Bauernzug oder dem Schlagen einer Figur
+	# 6. Nummer des nächsten Zuges
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
