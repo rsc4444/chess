@@ -8,7 +8,7 @@ import sys
 
 board = [
 ["br","bn","bb","bq","bk","bb","bn","br"],
-["bp","bp","bp","bp","bp","bp","bp","bp"],
+["bp","bp","bp","bp","wp","bp","bp","bp"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
 ["--","--","--","--","--","--","--","--"],
@@ -24,6 +24,7 @@ DIRECTIONS_N 	= [(-2,+1),(-1,+2),(+1,+2),(+2,+1),(+2,-1),(+1,-2),(-1,-2),(-2,-1)
 OTHERCOLOR 		= {"w":"b","b":"w"}
 board 			= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
 boardCopy 		= []
+
 # FEN
 
 # Aufgabe capturableEnPassant
@@ -46,6 +47,58 @@ boardCopy 		= []
 		# zeigt Feld an, das ich mit einem enpassant-Schlag betreten kann (natürlich nur mit Bauer aus benachbarter Linie möglich)
 	# 5. Gespielte Halbzüge seit dem letzten Bauernzug oder dem Schlagen einer Figur
 	# 6. Nummer des nächsten Zuges
+
+# ====================================================================================================
+# FEN
+# ====================================================================================================
+
+# Ausgangsstellung FEN:
+# "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+def getFEN(color):	
+	fen = ""
+
+	# 1. Figurenstellung
+	for sourceRank in range(8):
+		for sourceLine in range(8):
+			piece = board.iloc[sourceRank,sourceLine]
+			if piece.startswith("b"): # schwarz
+				fen += piece[1] # Kleinbuchstabe
+			elif piece.startswith("w"): # weiß
+				fen += piece[1].upper() # Großbuchstabe
+			else: # wenn jetziges Feld leer
+				if fen[-1] in "rnbqkpRNBQKP/": # wenn vorangegangenes Feld mit Figur besetzt oder neue Zeile
+					fen += "1" # dann beginnen wir mit 1 zu zählen
+				else: # wenn vorangegangenes Feld leer => hochzählen
+					fen += str(int(fen[-1]) + 1) # Neue Zahl = (alte Zahl + 1) => neue Zahl hinten anhängen
+					fen = fen[:-2]+fen[-1] # alte Zahl (jetzt vorletztes Element) löschen
+		if sourceRank < 7:
+			fen += "/"
+
+	# 2. Zugrecht
+	fen += " " + color
+
+	# 3. Rochaderechte
+	# ...
+
+	# 4. Möglicher En-Passant-Schlag
+	# ...
+
+	# 5. Gespielte Halbzüge seit dem letzten Bauernzug oder dem Schlagen einer Figur
+	# ...
+
+	# 6. Nummer des nächsten Zuges 
+	# ...
+
+	return fen
+
+color = "w"
+
+print("--------------------------------------------------------------------------------")
+print(getFEN(color))
+print("--------------------------------------------------------------------------------")
+
+sys.exit()
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
