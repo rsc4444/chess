@@ -70,8 +70,7 @@ def getFEN(color):
 				if fen[-1] in "rnbqkpRNBQKP/": # wenn vorangegangenes Feld mit Figur besetzt oder neue Zeile
 					fen += "1" # dann beginnen wir mit 1 zu zählen
 				else: # wenn vorangegangenes Feld leer => hochzählen
-					fen += str(int(fen[-1]) + 1) # Neue Zahl = (alte Zahl + 1) => neue Zahl hinten anhängen
-					fen = fen[:-2]+fen[-1] # alte Zahl (jetzt vorletztes Element) löschen
+					fen = fen[:-1] + str(int(fen[-1]) + 1) # 1. bis vorletztes Element bleibt, letztes Element ist neue Zahl (statt alte Zahl)
 		if sourceRank < 7:
 			fen += "/"
 
