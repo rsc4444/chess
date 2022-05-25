@@ -77,33 +77,26 @@ def getFEN(color):
 	# 2. Zugrecht
 	fen += " " + color
 
-	# 3. Rochaderechte
-	# ...
-
-	# 4. Möglicher En-Passant-Schlag
-	# ...
-
-	# 5. Gespielte Halbzüge seit dem letzten Bauernzug oder dem Schlagen einer Figur
-	# ...
-
-	# 6. Nummer des nächsten Zuges 
-	# ...
-
+	print()
+	print("FEN:", fen)
 	return fen
 
 color = "w"
 
-print("--------------------------------------------------------------------------------")
-print(getFEN(color))
-print("--------------------------------------------------------------------------------")
+# print("--------------------------------------------------------------------------------")
+# print(getFEN(color))
+# print("--------------------------------------------------------------------------------")
 
-sys.exit()
+# sys.exit()
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
 # ====================================================================================================
 
 def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant):
+
+	getFEN(color)
+
 	totalValuePieces 	= 0
 	lightSquaredBishops = 0
 	darkSquaredBishops 	= 0
