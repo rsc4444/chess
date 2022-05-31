@@ -1,3 +1,4 @@
+import itertools
 import pandas as pd
 import random
 import sys
