@@ -17,6 +17,17 @@ board = [
 ["wr","wn","wb","wq","wk","wb","wn","wr"],
 ]
 
+board = [
+["br","bn","bb","bq","bk","bb","bn","br"],
+["bp","bp","bp","bp","bp","bp","bp","bp"],
+["--","--","--","--","--","--","--","--"],
+["--","--","--","--","--","--","--","br"],
+["--","--","--","--","--","--","--","--"],
+["--","--","--","--","--","--","--","--"],
+["wp","wp","wp","wp","wp","--","--","--"],
+["wr","wn","wb","wq","wk","--","--","wr"],
+]
+
 LETTERS 		= ("a","b","c","d","e","f","g","h")
 NUMBERS 		= ("8","7","6","5","4","3","2","1")
 DIRECTIONS_RBQK = [(-1,0),(+1,0),(0,+1),(0,-1),(-1,+1),(+1,-1),(+1,+1),(-1,-1)]
@@ -55,39 +66,35 @@ boardCopy 		= []
 # Ausgangsstellung FEN:
 # "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-def getFEN(color):	
-	fen = ""
+def getFEN(color):
+    fen = []
 
-	# 1. Figurenstellung
-	for sourceRank in range(8):
-		for sourceLine in range(8):
-			piece = board.iloc[sourceRank,sourceLine]
-			if piece.startswith("b"): # schwarz
-				fen += piece[1] # Kleinbuchstabe
-			elif piece.startswith("w"): # weiß
-				fen += piece[1].upper() # Großbuchstabe
-			else: # wenn jetziges Feld leer
-				if fen[-1] in "rnbqkpRNBQKP/": # wenn vorangegangenes Feld mit Figur besetzt oder neue Zeile
-					fen += "1" # dann beginnen wir mit 1 zu zählen
-				else: # wenn vorangegangenes Feld leer => hochzählen
-					fen = fen[:-1] + str(int(fen[-1]) + 1) # 1. bis vorletztes Element bleibt, letztes Element ist neue Zahl (statt alte Zahl)
-		if sourceRank < 7:
-			fen += "/"
+    # 1. Figurenstellung
+    for sourceRank in range(8):
+        for sourceLine in range(8):
+            piece = board.iloc[sourceRank,sourceLine]
+            if piece.startswith("b"): # schwarz
+                fen.append(piece[1]) # Kleinbuchstabe
+            elif piece.startswith("w"): # weiß
+                fen.append(piece[1].upper()) # Großbuchstabe
+            else: # wenn jetziges Feld leer
+                if fen[-1] in "rnbqkpRNBQKP/": # ...
+                    fen.append("1") # dann beginnen wir mit 1 zu zählen
+                else: # wenn vorangegangenes Feld leer => hochzählen
+                    fen.append(str(int(fen.pop()) + 1)) # ...
+        if sourceRank < 7:
+            fen.append("/")
 
-	# 2. Zugrecht
-	fen += " " + color
+    # 2. Zugrecht
+    fen.append(f" {color}")
 
-	print()
-	print("FEN:", fen)
-	return fen
+    return  "".join(fen).split(" ")
 
-color = "w"
 
-# print("--------------------------------------------------------------------------------")
-# print(getFEN(color))
-# print("--------------------------------------------------------------------------------")
-
-# sys.exit()
+fen = getFEN("w")
+print(fen)
+print(fen[0])
+print(fen[1])
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
@@ -177,11 +184,13 @@ def checkLongCastlingRight(piece,moveHistory,backRank) -> bool:
 
 
 def checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory) -> tuple:
-	backRank = "1" if piece.startswith("w") else "8"
+	# backRank = "1" if piece.startswith("w") else "8"
+	backRank = ("8","1")[piece.startswith("w")]
 	shortCastlingRight 	= checkShortCastlingRight(piece,moveHistory,backRank)
 	longCastlingRight 	= checkLongCastlingRight(piece,moveHistory,backRank)
 
-	backRank = 7 if piece.startswith("w") else 0
+	# backRank = 7 if piece.startswith("w") else 0
+	backRank = (0,7)[piece.startswith("w")]
 	# König muss am Zug sein und darf nicht im Schach stehen => füge Rochadezüge hinzu
 	if piece.endswith("k") and not kingInCheck and shortCastlingRight:
 		legalMovesV1.extend([[backRank,6],[backRank,7]])
@@ -202,12 +211,15 @@ def checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassa
 
 
 def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine) -> list:
-	backRank = 7 if color == "w" else 0 # (Grund)reihe in Abhängigkeit von Farbe (schwarz/weiß)
+	# backRank = 7 if color == "w" else 0 # (Grund)reihe in Abhängigkeit von Farbe (schwarz/weiß)
+	backRank = (0,7)[color == "w"] # (Grund)reihe in Abhängigkeit von Farbe (schwarz/weiß)
 
 	# "checkCastleMovesV2" || Prüfung, ob Rochadezug vorliegt und ob diese durchgeführt werden kann (König darf nicht ins Schach)
 	for move in legalMovesV1.copy():
-		summand07 = 0 if move in [[backRank,6],[backRank,7]] else 7 # (Grund)reihe in Abhängigkeit von Rochade (kurz/lang)
-		summand08 = 0 if move in [[backRank,6],[backRank,7]] else 8 # Linie in Abhängigkeit von Rochade (kurz/lang)
+		# summand07 = 0 if move in [[backRank,6],[backRank,7]] else 7 # (Grund)reihe in Abhängigkeit von Rochade (kurz/lang)
+		summand07 = (7,0)[move in [[backRank,6],[backRank,7]]] # (Grund)reihe in Abhängigkeit von Rochade (kurz/lang)
+		# summand08 = 0 if move in [[backRank,6],[backRank,7]] else 8 # Linie in Abhängigkeit von Rochade (kurz/lang)
+		summand08 = (8,0)[move in [[backRank,6],[backRank,7]]] # Linie in Abhängigkeit von Rochade (kurz/lang)
 		# Beide Rochadezüge (Zielfeld = Königsfeld/Turmfeld) prüfen | Zwischenschritt + Zielfeld dürfen nicht bedroht sein
 		if piece.endswith("k") and board.iloc[backRank,abs(4-summand08)] == color+"k" and move in [[backRank,abs(6-summand08)],[backRank,abs(7-summand07)]]:
 			# 1. Königsschritt gehen (Zwischenschritt)
@@ -249,8 +261,10 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 
 
 def checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant) -> list:
-	summand = 7 if piece.startswith("b") else 0 # Für Position: ggü-liegende Reihen/Linien von Schwarz und Weiß ergeben 7
-	factor = -1 if piece.startswith("b") else 1 # Für Zug: (Schlag)Richtung der Bauern von schwarz und weiß haben umgekehrte Vorzeichen
+	# summand = 7 if piece.startswith("b") else 0 # Für Position: ggü-liegende Reihen/Linien von Schwarz und Weiß ergeben 7
+	summand = (0,7)[piece.startswith("b")] # Für Position: ggü-liegende Reihen/Linien von Schwarz und Weiß ergeben 7
+	# factor = -1 if piece.startswith("b") else 1 # Für Zug: (Schlag)Richtung der Bauern von schwarz und weiß haben umgekehrte Vorzeichen
+	factor = (1,-1)[piece.startswith("b")] # Für Zug: (Schlag)Richtung der Bauern von schwarz und weiß haben umgekehrte Vorzeichen
 	# Wenn Bauer in 2./7. Reihe und beide Felder davor frei => füge Zug hinzu
 	if sourceRank == abs(6-summand) and board.iloc[sourceRank-1*factor,sourceLine] == "--" and board.iloc[sourceRank-2*factor,sourceLine] == "--":
 		legalMovesV1.append([sourceRank-2*factor,sourceLine])
@@ -270,7 +284,8 @@ def checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPa
 
 
 def checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine) -> list:
-	directions = DIRECTIONS_N if piece[1] == "n" else DIRECTIONS_RBQK # Springer hat andere Richtungen als der Rest der Figuren
+	# directions = DIRECTIONS_N if piece[1] == "n" else DIRECTIONS_RBQK # Springer hat andere Richtungen als der Rest der Figuren
+	directions = (DIRECTIONS_RBQK,DIRECTIONS_N)[piece[1] == "n"] # Springer hat andere Richtungen als der Rest der Figuren
 	for direction in directions:
 		for step in range(1,8):
 			# Bei Läufer müssen die geraden und bei Turm die diagonalen Züge ausgeschlossen werden
@@ -307,7 +322,8 @@ def promote(piece,targetRank,playerWhite,playerBlack) -> tuple:
 
 def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant) -> bool:
 	hasTakenPiece = False
-	backRank = 7 if piece.startswith("w") else 0
+	# backRank = 7 if piece.startswith("w") else 0
+	backRank = (0,7)[piece.startswith("w")]
 	
 	# kurze / lange Rochade
 	if piece.endswith("k") and shortCastlingRight and targetLine in [6,7]:
@@ -328,7 +344,8 @@ def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,target
 	
 	if board.iloc[targetRank,targetLine][0] == OTHERCOLOR[piece[0]]: hasTakenPiece = True # Wenn auf Zielfeld Gegner steht => Schlagzug
 
-	enpassantRank = 3 if piece.startswith("w") else 4
+	# enpassantRank = 3 if piece.startswith("w") else 4
+	enpassantRank = (4,3)[piece.startswith("w")]
 	# Wenn enPassant möglich war UND ich weißen Bauer hatte UND ich auf 5. Reihe stand UND Spalte Zielfeld war Spalte gegenerischer Bauer
 	if len(capturableEnPassant) == 2 and  piece == piece[0]+"p" and sourceRank == enpassantRank and targetLine == capturableEnPassant[1]:
 		# Dann gegenerischen Bauer eliminieren => Schlagzug
