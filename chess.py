@@ -75,15 +75,15 @@ def getFEN(color):
             fen.append("/")
 
     # 2. Zugrecht
-    fen.append(f" {color}")
+    fen.append(f" {color} ")
 
-    return  "".join(fen).split(" ")
+    return  "".join(fen)
 
 
 fen = getFEN("w")
 print(fen)
-print(fen[0])
-print(fen[1])
+print(fen.split(" ")[0])
+print(fen.split(" ")[1])
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
