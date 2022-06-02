@@ -55,43 +55,41 @@ boardCopy 		= []
 # Ausgangsstellung FEN:
 # "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-def getFEN(color):
-    fen = []
+# def getFEN(color):
+#     fen = []
 
-    # 1. Figurenstellung
-    for sourceRank in range(8):
-        for sourceLine in range(8):
-            piece = board.iloc[sourceRank,sourceLine]
-            if piece.startswith("b"): # schwarz
-                fen.append(piece[1]) # Kleinbuchstabe
-            elif piece.startswith("w"): # weiß
-                fen.append(piece[1].upper()) # Großbuchstabe
-            else: # wenn jetziges Feld leer
-                if fen[-1] in "rnbqkpRNBQKP/": # ...
-                    fen.append("1") # dann beginnen wir mit 1 zu zählen
-                else: # wenn vorangegangenes Feld leer => hochzählen
-                    fen.append(str(int(fen.pop()) + 1)) # ...
-        if sourceRank < 7:
-            fen.append("/")
+#     # 1. Figurenstellung
+#     for sourceRank in range(8):
+#         for sourceLine in range(8):
+#             piece = board.iloc[sourceRank,sourceLine]
+#             if piece.startswith("b"): # schwarz
+#                 fen.append(piece[1]) # Kleinbuchstabe
+#             elif piece.startswith("w"): # weiß
+#                 fen.append(piece[1].upper()) # Großbuchstabe
+#             else: # wenn jetziges Feld leer
+#                 if fen[-1] in "rnbqkpRNBQKP/": # ...
+#                     fen.append("1") # dann beginnen wir mit 1 zu zählen
+#                 else: # wenn vorangegangenes Feld leer => hochzählen
+#                     fen.append(str(int(fen.pop()) + 1)) # ...
+#         if sourceRank < 7:
+#             fen.append("/")
 
-    # 2. Zugrecht
-    fen.append(f" {color} ")
+#     # 2. Zugrecht
+#     fen.append(f" {color} ")
 
-    return  "".join(fen)
+#     return  "".join(fen)
 
 
-fen = getFEN("w")
-print(fen)
-print(fen.split(" ")[0])
-print(fen.split(" ")[1])
+# fen = getFEN("w")
+# print(fen)
+# print(fen.split(" ")[0])
+# print(fen.split(" ")[1])
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
 # ====================================================================================================
 
 def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant):
-
-	getFEN(color)
 
 	totalValuePieces 	= 0
 	lightSquaredBishops = 0
@@ -302,7 +300,6 @@ def promote(piece,targetRank,playerWhite,playerBlack) -> tuple:
 
 def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant) -> bool:
 	hasTakenPiece = False
-	# backRank = 7 if piece.startswith("w") else 0
 	backRank = (0,7)[piece.startswith("w")]
 	
 	# kurze / lange Rochade
@@ -407,8 +404,8 @@ def startGame():
 	legalMovesV2		= []
 
 	print("\nWelcome to my chess game!")
-	# playerWhite, playerBlack = selectPlayerType("White"), selectPlayerType("Black")
-	playerWhite, playerBlack = "human", "human"
+	playerWhite, playerBlack = selectPlayerType("White"), selectPlayerType("Black")
+	# playerWhite, playerBlack = "human", "human"
 	print(board)
 
 	while True:
