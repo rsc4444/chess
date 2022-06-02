@@ -126,7 +126,6 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 				legalMovesV2 = checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine)
 
 	# Nur Leichtfigur ODER nur weißfeldrige Läufer ODER nur schwarzfeldrige Läufer auf dem Brett (neben den Königen) => Unentschieden.
-	# if totalValuePieces <= 3 or lightSquaredBishops*3 == totalValuePieces or darkSquaredBishops*3 == totalValuePieces:
 	if totalValuePieces <= 3 or (lightSquaredBishops or darkSquaredBishops)*3 == totalValuePieces:
 		sys.exit("\nNot enough mating material! This is a draw.\n")
 
@@ -134,7 +133,7 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 	if not legalMovesV2 and not kingInCheck:
 		sys.exit("\nStalemate! This is a draw.\n")
 	elif not legalMovesV2 and kingInCheck:
-		sys.exit(f"\nCheckmate! {'White' if color == 'w' else 'Black'} wins.\n")
+		sys.exit(f"\nCheckmate! {('White','Black')[color == 'w']} wins.\n")
 
 	# Mindestens 50 Züge in Folge kein Bauern- oder Schlagzug oder Umwandlung => Unentschieden.
 	if (len_moveHistory := len(moveHistory)) >= (2*50):
@@ -173,12 +172,10 @@ def checkLongCastlingRight(piece,moveHistory,backRank) -> bool:
 
 
 def checkCastleMovesV1(piece,kingInCheck,legalMovesV1,moveHistory) -> tuple:
-	# backRank = "1" if piece.startswith("w") else "8"
 	backRank = ("8","1")[piece.startswith("w")]
 	shortCastlingRight 	= checkShortCastlingRight(piece,moveHistory,backRank)
 	longCastlingRight 	= checkLongCastlingRight(piece,moveHistory,backRank)
 
-	# backRank = 7 if piece.startswith("w") else 0
 	backRank = (0,7)[piece.startswith("w")]
 	# König muss am Zug sein und darf nicht im Schach stehen => füge Rochadezüge hinzu
 	if piece.endswith("k") and not kingInCheck and shortCastlingRight:
@@ -200,14 +197,11 @@ def checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassa
 
 
 def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine) -> list:
-	# backRank = 7 if color == "w" else 0 # (Grund)reihe in Abhängigkeit von Farbe (schwarz/weiß)
 	backRank = (0,7)[color == "w"] # (Grund)reihe in Abhängigkeit von Farbe (schwarz/weiß)
 
 	# "checkCastleMovesV2" || Prüfung, ob Rochadezug vorliegt und ob diese durchgeführt werden kann (König darf nicht ins Schach)
 	for move in legalMovesV1.copy():
-		# summand07 = 0 if move in [[backRank,6],[backRank,7]] else 7 # (Grund)reihe in Abhängigkeit von Rochade (kurz/lang)
 		summand07 = (7,0)[move in [[backRank,6],[backRank,7]]] # (Grund)reihe in Abhängigkeit von Rochade (kurz/lang)
-		# summand08 = 0 if move in [[backRank,6],[backRank,7]] else 8 # Linie in Abhängigkeit von Rochade (kurz/lang)
 		summand08 = (8,0)[move in [[backRank,6],[backRank,7]]] # Linie in Abhängigkeit von Rochade (kurz/lang)
 		# Beide Rochadezüge (Zielfeld = Königsfeld/Turmfeld) prüfen | Zwischenschritt + Zielfeld dürfen nicht bedroht sein
 		if piece.endswith("k") and board.iloc[backRank,abs(4-summand08)] == color+"k" and move in [[backRank,abs(6-summand08)],[backRank,abs(7-summand07)]]:
@@ -250,9 +244,7 @@ def checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLin
 
 
 def checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant) -> list:
-	# summand = 7 if piece.startswith("b") else 0 # Für Position: ggü-liegende Reihen/Linien von Schwarz und Weiß ergeben 7
 	summand = (0,7)[piece.startswith("b")] # Für Position: ggü-liegende Reihen/Linien von Schwarz und Weiß ergeben 7
-	# factor = -1 if piece.startswith("b") else 1 # Für Zug: (Schlag)Richtung der Bauern von schwarz und weiß haben umgekehrte Vorzeichen
 	factor = (1,-1)[piece.startswith("b")] # Für Zug: (Schlag)Richtung der Bauern von schwarz und weiß haben umgekehrte Vorzeichen
 	# Wenn Bauer in 2./7. Reihe und beide Felder davor frei => füge Zug hinzu
 	if sourceRank == abs(6-summand) and board.iloc[sourceRank-1*factor,sourceLine] == "--" and board.iloc[sourceRank-2*factor,sourceLine] == "--":
@@ -273,7 +265,6 @@ def checkLegalMovesPawns(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPa
 
 
 def checkLegalMovesPieces(piece,legalMovesV1,sourceRank,sourceLine) -> list:
-	# directions = DIRECTIONS_N if piece[1] == "n" else DIRECTIONS_RBQK # Springer hat andere Richtungen als der Rest der Figuren
 	directions = (DIRECTIONS_RBQK,DIRECTIONS_N)[piece[1] == "n"] # Springer hat andere Richtungen als der Rest der Figuren
 	for direction in directions:
 		for step in range(1,8):
@@ -333,7 +324,6 @@ def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,target
 	
 	if board.iloc[targetRank,targetLine][0] == OTHERCOLOR[piece[0]]: hasTakenPiece = True # Wenn auf Zielfeld Gegner steht => Schlagzug
 
-	# enpassantRank = 3 if piece.startswith("w") else 4
 	enpassantRank = (4,3)[piece.startswith("w")]
 	# Wenn enPassant möglich war UND ich weißen Bauer hatte UND ich auf 5. Reihe stand UND Spalte Zielfeld war Spalte gegenerischer Bauer
 	if len(capturableEnPassant) == 2 and  piece == piece[0]+"p" and sourceRank == enpassantRank and targetLine == capturableEnPassant[1]:
@@ -425,7 +415,7 @@ def startGame():
 		kingInCheck = isKingInCheck(color) # Mein König im Schach?
 		checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant) # Remis-/Mattstellung?
 
-		print(f"\n{'White' if color == 'w' else 'Black'} to move:")
+		print(f"\n{('Black','White')[color == 'w']} to move:")
 		while True:
 			piece, sourceRank, sourceLine, sourceSquare = getPlayerCoords(playerWhite, playerBlack, color, "From")
 
@@ -463,7 +453,7 @@ def startGame():
 
 		print()
 		print(board)
-		color = "w" if color == "b" else "b" # Farbe wechseln
+		color = ("b","w")[color == "b"] # Farbe wechseln
 
 if __name__=="__main__":
 	startGame()
