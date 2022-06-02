@@ -25,6 +25,14 @@ OTHERCOLOR 		= {"w":"b","b":"w"}
 board 			= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
 boardCopy 		= []
 
+fen 			= "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+fen_0 			= fen.split()[0]
+fen_1 			= fen.split()[1]
+fen_2 			= fen.split()[2]
+fen_3 			= fen.split()[3]
+fen_4 			= fen.split()[4]
+fen_5 			= fen.split()[5]
+
 # FEN
 
 # Aufgabe capturableEnPassant
@@ -52,38 +60,38 @@ boardCopy 		= []
 # FEN
 # ====================================================================================================
 
-# Ausgangsstellung FEN:
-# "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+# def getFEN(color):
+# 	fen_0 = []
 
-def getFEN(color):
-	fen = []
+# 	# 1. Figurenstellung
+# 	for sourceRank in range(8):
+# 		for sourceLine in range(8):
+# 			piece = board.iloc[sourceRank,sourceLine]
+# 			if piece.startswith("b"): # schwarz
+# 				fen_0.append(piece[1]) # Kleinbuchstabe
+# 			elif piece.startswith("w"): # weiß
+# 				fen_0.append(piece[1].upper()) # Großbuchstabe
+# 			else: # wenn jetziges Feld leer
+# 				if fen_0[-1] in "rnbqkpRNBQKP/": # ...
+# 					fen_0.append("1") # dann beginnen wir mit 1 zu zählen
+# 				else: # wenn vorangegangenes Feld leer => hochzählen
+# 					fen_0.append(str(int(fen_0.pop()) + 1)) # ...
+# 		if sourceRank < 7:
+# 			fen_0.append("/")
 
-	# 1. Figurenstellung
-	for sourceRank in range(8):
-		for sourceLine in range(8):
-			piece = board.iloc[sourceRank,sourceLine]
-			if piece.startswith("b"): # schwarz
-				fen.append(piece[1]) # Kleinbuchstabe
-			elif piece.startswith("w"): # weiß
-				fen.append(piece[1].upper()) # Großbuchstabe
-			else: # wenn jetziges Feld leer
-				if fen[-1] in "rnbqkpRNBQKP/": # ...
-					fen.append("1") # dann beginnen wir mit 1 zu zählen
-				else: # wenn vorangegangenes Feld leer => hochzählen
-					fen.append(str(int(fen.pop()) + 1)) # ...
-		if sourceRank < 7:
-			fen.append("/")
+# 	# 2. Zugrecht
+# 	# fen_0.append(f" {color} ")
 
-	# 2. Zugrecht
-	fen.append(f" {color} ")
-
-	return "".join(fen)
+# 	return "".join(fen_0)
 
 
-fen = getFEN("w")
-print(fen)
-print(fen.split(" ")[0])
-print(fen.split(" ")[1])
+# fen_0 = getFEN("w")
+# print(type(fen_0))
+# print(fen_0)
+# print(type(fen_0.split()[0]))
+# print(fen_0.split()[0])
+
+# sys.exit("exit")
 
 # ====================================================================================================
 # Prüfe bestimmte Zustände
@@ -97,6 +105,8 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 	legalMovesV1 		= []
 	legalMovesV2 		= []
 
+	fen_0 				= []
+
 	boardCopy.append(board.values.tolist())
 	if boardCopy.count(board.values.tolist()) == 3:
 		sys.exit("Threefold repetition! This is a draw.")
@@ -105,8 +115,8 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 	for sourceRank in range(8):
 		for sourceLine in range(8):
 			piece = board.iloc[sourceRank,sourceLine]
-			if piece == "--": continue
-			elif piece.endswith("p") or piece.endswith("q") or piece.endswith("r"): # Bauer / Dame / Turm
+			# if piece == "--": continue
+			if piece.endswith("p") or piece.endswith("q") or piece.endswith("r"): # Bauer / Dame / Turm
 				totalValuePieces += 9
 			elif piece.endswith("n"): # Springer
 				totalValuePieces += 3
@@ -115,13 +125,28 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 				if (sourceRank + sourceLine) % 2 == 0: # Indizes beide gerade oder beide ungerade => weißes Feld
 					lightSquaredBishops += 1
 				else: # Indizes 1x gerade und 1x ungerade => schwarzes Feld
-					darkSquaredBishops += 1 
+					darkSquaredBishops += 1
+
+# FEN ########################################################################
+			if piece.startswith("b"): # schwarz
+				fen_0.append(piece[1]) # Kleinbuchstabe
+			elif piece.startswith("w"): # weiß
+				fen_0.append(piece[1].upper()) # Großbuchstabe
+			else: # wenn jetziges Feld leer
+				if fen_0[-1] in "rnbqkpRNBQKP/": # ...
+					fen_0.append("1") # dann beginnen wir mit 1 zu zählen
+				else: # wenn vorangegangenes Feld leer => hochzählen
+					fen_0.append(str(int(fen_0.pop()) + 1)) # ...
+# FEN ########################################################################
 
 			# Wenn piece = eigene Figur
 			if piece.startswith(color):
 				legalMovesV1.clear()
 				legalMovesV1 = checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
 				legalMovesV2 = checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine)
+
+		if sourceRank < 7: # FEN
+			fen_0.append("/")
 
 	# Nur Leichtfigur ODER nur weißfeldrige Läufer ODER nur schwarzfeldrige Läufer auf dem Brett (neben den Königen) => Unentschieden.
 	if totalValuePieces <= 3 or (lightSquaredBishops or darkSquaredBishops)*3 == totalValuePieces:
@@ -139,6 +164,8 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 			if (moveHistory[i-1][0][1] == "p") or moveHistory[i-1][3] or moveHistory[i-1][4]: break
 		else:
 			sys.exit("\n50 moves without moving a pawn, taking a piece or mating the king! This is a draw.\n")
+
+	return "".join(fen_0)
 
 
 def isKingInCheck(color) -> bool:
@@ -404,13 +431,15 @@ def startGame():
 	legalMovesV2		= []
 
 	print("\nWelcome to my chess game!")
-	playerWhite, playerBlack = selectPlayerType("White"), selectPlayerType("Black")
-	# playerWhite, playerBlack = "human", "human"
+	# playerWhite, playerBlack = selectPlayerType("White"), selectPlayerType("Black")
+	playerWhite, playerBlack = "human", "human"
 	print(board)
 
 	while True:
 		kingInCheck = isKingInCheck(color) # Mein König im Schach?
-		checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant) # Remis-/Mattstellung?
+		fen_0 = checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant) # Remis-/Mattstellung?
+		fen_new = fen_0 + " " + color
+		print(fen_new)
 
 		print(f"\n{('Black','White')[color == 'w']} to move:")
 		while True:
