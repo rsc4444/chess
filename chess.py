@@ -325,7 +325,7 @@ def promote(piece,targetRank,playerWhite,playerBlack) -> tuple:
 	return piece, promotion
 
 
-def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant) -> bool:
+def move(fen_2,piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant) -> bool:
 	hasTakenPiece = False
 	backRank = (0,7)[piece.startswith("w")]
 	
@@ -342,9 +342,16 @@ def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,target
 		board.iloc[backRank,0] = "--"
 		board.iloc[backRank,3] = piece[0]+"r"
 	
-	else: # Jeder Nich-Rochade-Zug. Altes Feld räumen, neues Feld mit gezogener Figur besetzen
+	else: # Jeder Nicht-Rochade-Zug. Altes Feld räumen, neues Feld mit gezogener Figur besetzen
 		board.iloc[sourceRank,sourceLine] = "--"
 		board.iloc[targetRank,targetLine] = piece
+
+	# Rochade noch möglich und (König oder Turm wird bewegt): Lösche Rochaderecht
+	if "K" in fen_2 and (piece == "wk" or [sourceRank, sourceLine] == [7,7]): fen_2 = fen_2.replace("K","")
+	if "Q" in fen_2 and (piece == "wk" or [sourceRank, sourceLine] == [7,0]): fen_2 = fen_2.replace("Q","")
+	if "k" in fen_2 and (piece == "bk" or [sourceRank, sourceLine] == [0,7]): fen_2 = fen_2.replace("k","")
+	if "q" in fen_2 and (piece == "bk" or [sourceRank, sourceLine] == [0,0]): fen_2 = fen_2.replace("q","")
+	if fen_2 == "": fen_2 = "-"
 	
 	if board.iloc[targetRank,targetLine][0] == OTHERCOLOR[piece[0]]: hasTakenPiece = True # Wenn auf Zielfeld Gegner steht => Schlagzug
 
@@ -355,7 +362,7 @@ def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,target
 		board.iloc[capturableEnPassant[0],capturableEnPassant[1]] = "--"
 		hasTakenPiece = True
 
-	return hasTakenPiece
+	return fen_2, hasTakenPiece
 
 
 def checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine) -> list:
@@ -423,7 +430,7 @@ def getPlayerCoords(playerWhite, playerBlack, color, inputMessage):
 				return (rank, line, inp)
 
 
-def startGame():
+def startGame(fen_2):
 	moveHistory 		= []  # Zughstorie
 	capturableEnPassant = []  # Bauern, die der Ziehende enPassant schlagen kann
 	color 				= "w" # Weiß beginnt
@@ -439,7 +446,7 @@ def startGame():
 		kingInCheck = isKingInCheck(color) # Mein König im Schach?
 		fen_0 = checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant) # Remis-/Mattstellung?
 		fen_new = fen_0 + " " + color
-		print(fen_new)
+		# print(fen_new)
 
 		print(f"\n{('Black','White')[color == 'w']} to move:")
 		while True:
@@ -471,9 +478,12 @@ def startGame():
 				print("To:",targetSquare)
 
 			# ggf. umwandeln / ggf. enPassant geschlagenen Bauern eliminieren / immer Figur ziehen / ggf. gegangenen Doppelschritt merken / Zughistorie
-			piece, promotion 	= promote(piece,targetRank,playerWhite,playerBlack)
-			hasTakenPiece 		= move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant)
-			capturableEnPassant = checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine)
+			piece, promotion 		= promote(piece,targetRank,playerWhite,playerBlack)
+			# fen_2					= "KQkq"
+			fen_2, hasTakenPiece 	= move(fen_2,piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant)
+			fen_new = fen_new + " " + fen_2
+			print(fen_new)
+			capturableEnPassant 	= checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine)
 			moveHistory.append([piece,sourceSquare,targetSquare,hasTakenPiece,promotion])
 			break
 
@@ -482,4 +492,4 @@ def startGame():
 		color = ("b","w")[color == "b"] # Farbe wechseln
 
 if __name__=="__main__":
-	startGame()
+	startGame(fen_2)
