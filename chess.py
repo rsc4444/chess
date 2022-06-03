@@ -325,7 +325,7 @@ def promote(piece,targetRank,playerWhite,playerBlack) -> tuple:
 	return piece, promotion
 
 
-def move(fen_2,piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant) -> bool:
+def move(fen_2,piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant) -> tuple:
 	hasTakenPiece = False
 	backRank = (0,7)[piece.startswith("w")]
 	
@@ -362,15 +362,20 @@ def move(fen_2,piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,
 		board.iloc[capturableEnPassant[0],capturableEnPassant[1]] = "--"
 		hasTakenPiece = True
 
-	return fen_2, hasTakenPiece
-
-
-def checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine) -> list:
 	# Checke, ob wir gerade einen Bauern mit Doppelschritt bewegt haben, der als Nächstes durch enPassant vom Gegner geschlagen werden kann
 	capturableEnPassant = []
-	if piece.endswith("p") and abs(targetRank-sourceRank) == 2:
+	# muss noch geklärt werden: wenn figur am rand => ...
+	# muss noch geklärt werden: fen_3 ist der neue, der erst in der nächsten fen übergeben werden soll
+	if piece.endswith("p") and abs(targetRank-sourceRank) == 2 and board.iloc[targetRank,targetLine+1].startswith(OTHERCOLOR[piece[0]]):
 		capturableEnPassant = [targetRank,targetLine]
-	return capturableEnPassant
+		fen_3 = str(targetRank)+str(targetLine)
+	elif piece.endswith("p") and abs(targetRank-sourceRank) == 2 and board.iloc[targetRank,targetLine-1].startswith(OTHERCOLOR[piece[0]]):
+		capturableEnPassant = [targetRank,targetLine]
+		fen_3 = str(targetRank)+str(targetLine)
+	else:
+		fen_3 = "-"
+
+	return fen_2, fen_3, hasTakenPiece, capturableEnPassant
 
 
 def attackedByOpponent(dangerFields,piece) -> bool:
@@ -445,8 +450,7 @@ def startGame(fen_2):
 	while True:
 		kingInCheck = isKingInCheck(color) # Mein König im Schach?
 		fen_0 = checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant) # Remis-/Mattstellung?
-		fen_new = fen_0 + " " + color
-		# print(fen_new)
+		# fen_new = fen_0 + " " + color
 
 		print(f"\n{('Black','White')[color == 'w']} to move:")
 		while True:
@@ -479,11 +483,10 @@ def startGame(fen_2):
 
 			# ggf. umwandeln / ggf. enPassant geschlagenen Bauern eliminieren / immer Figur ziehen / ggf. gegangenen Doppelschritt merken / Zughistorie
 			piece, promotion 		= promote(piece,targetRank,playerWhite,playerBlack)
-			# fen_2					= "KQkq"
-			fen_2, hasTakenPiece 	= move(fen_2,piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant)
-			fen_new = fen_new + " " + fen_2
+			fen_2, fen_3, hasTakenPiece, capturableEnPassant	= move(fen_2,piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant)
+			fen_new = fen_0 + " " + color + " " + fen_2 + " " + fen_3
 			print(fen_new)
-			capturableEnPassant 	= checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine)
+			# capturableEnPassant 	= checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine)
 			moveHistory.append([piece,sourceSquare,targetSquare,hasTakenPiece,promotion])
 			break
 
