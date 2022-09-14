@@ -25,74 +25,6 @@ OTHERCOLOR 		= {"w":"b","b":"w"}
 board 			= pd.DataFrame(board,index=NUMBERS,columns=LETTERS)
 boardCopy 		= []
 
-fen 			= "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-fen_0 			= fen.split()[0]
-fen_1 			= fen.split()[1]
-fen_2 			= fen.split()[2]
-fen_3 			= fen.split()[3]
-fen_4 			= fen.split()[4]
-fen_5 			= fen.split()[5]
-
-# FEN
-
-# Aufgabe capturableEnPassant
-	# (Falls vorhanden): Speichern des Feldes mit dem eigenen Bauern, der als Nächstes vom Gegner enpassant geschlagen werden kann
-
-# Aufgabe moveHistory ([piece,sourceSquare,targetSquare,hasTakenPiece,promotion])
-	# Bauernzug (piece), Schlagzug (hasTakenPiece), Umwandlungszug (promotion) in letzten 50 Zügen dokumentieren
-	# gucken, ob König oder Turm im gesamten Spiel schon bewegt wurden (sourceSquare,targetSquare). Für Rochadecheck.
-
-# Aufgabe boardCopy
-	# gucken, ob im gesamten Spiel eine Stellung schonmal erreicht wurde (wenn sich Rochaderecht geändert hat, dann neue Stellung)
-
-# Informationen FEN
-	# 1. Figurenstellung
-		# (zusammen mit 3. deckt das die Aufgabe der boardCopy ab)
-	# 2. Zugrecht
-	# 3. Rochaderechte
-		# (zusammen mit 1. deckt das die Aufgabe der boardCopy ab)
-	# 4. Möglicher En-Passant-Schlag
-		# zeigt Feld an, das ich mit einem enpassant-Schlag betreten kann (natürlich nur mit Bauer aus benachbarter Linie möglich)
-	# 5. Gespielte Halbzüge seit dem letzten Bauernzug oder dem Schlagen einer Figur
-	# 6. Nummer des nächsten Zuges
-
-# ====================================================================================================
-# FEN
-# ====================================================================================================
-
-# def getFEN(color):
-# 	fen_0 = []
-
-# 	# 1. Figurenstellung
-# 	for sourceRank in range(8):
-# 		for sourceLine in range(8):
-# 			piece = board.iloc[sourceRank,sourceLine]
-# 			if piece.startswith("b"): # schwarz
-# 				fen_0.append(piece[1]) # Kleinbuchstabe
-# 			elif piece.startswith("w"): # weiß
-# 				fen_0.append(piece[1].upper()) # Großbuchstabe
-# 			else: # wenn jetziges Feld leer
-# 				if fen_0[-1] in "rnbqkpRNBQKP/": # ...
-# 					fen_0.append("1") # dann beginnen wir mit 1 zu zählen
-# 				else: # wenn vorangegangenes Feld leer => hochzählen
-# 					fen_0.append(str(int(fen_0.pop()) + 1)) # ...
-# 		if sourceRank < 7:
-# 			fen_0.append("/")
-
-# 	# 2. Zugrecht
-# 	# fen_0.append(f" {color} ")
-
-# 	return "".join(fen_0)
-
-
-# fen_0 = getFEN("w")
-# print(type(fen_0))
-# print(fen_0)
-# print(type(fen_0.split()[0]))
-# print(fen_0.split()[0])
-
-# sys.exit("exit")
-
 # ====================================================================================================
 # Prüfe bestimmte Zustände
 # ====================================================================================================
@@ -105,8 +37,6 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 	legalMovesV1 		= []
 	legalMovesV2 		= []
 
-	fen_0 				= []
-
 	boardCopy.append(board.values.tolist())
 	if boardCopy.count(board.values.tolist()) == 3:
 		sys.exit("Threefold repetition! This is a draw.")
@@ -115,8 +45,8 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 	for sourceRank in range(8):
 		for sourceLine in range(8):
 			piece = board.iloc[sourceRank,sourceLine]
-			# if piece == "--": continue
-			if piece.endswith("p") or piece.endswith("q") or piece.endswith("r"): # Bauer / Dame / Turm
+			if piece == "--": continue
+			elif piece.endswith("p") or piece.endswith("q") or piece.endswith("r"): # Bauer / Dame / Turm
 				totalValuePieces += 9
 			elif piece.endswith("n"): # Springer
 				totalValuePieces += 3
@@ -125,28 +55,13 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 				if (sourceRank + sourceLine) % 2 == 0: # Indizes beide gerade oder beide ungerade => weißes Feld
 					lightSquaredBishops += 1
 				else: # Indizes 1x gerade und 1x ungerade => schwarzes Feld
-					darkSquaredBishops += 1
-
-# FEN ########################################################################
-			if piece.startswith("b"): # schwarz
-				fen_0.append(piece[1]) # Kleinbuchstabe
-			elif piece.startswith("w"): # weiß
-				fen_0.append(piece[1].upper()) # Großbuchstabe
-			else: # wenn jetziges Feld leer
-				if fen_0[-1] in "rnbqkpRNBQKP/": # ...
-					fen_0.append("1") # dann beginnen wir mit 1 zu zählen
-				else: # wenn vorangegangenes Feld leer => hochzählen
-					fen_0.append(str(int(fen_0.pop()) + 1)) # ...
-# FEN ########################################################################
+					darkSquaredBishops += 1 
 
 			# Wenn piece = eigene Figur
 			if piece.startswith(color):
 				legalMovesV1.clear()
 				legalMovesV1 = checkLegalMovesV1(piece,legalMovesV1,sourceRank,sourceLine,capturableEnPassant)
 				legalMovesV2 = checkLegalMovesV2(color,piece,legalMovesV1,legalMovesV2,sourceRank,sourceLine)
-
-		if sourceRank < 7: # FEN
-			fen_0.append("/")
 
 	# Nur Leichtfigur ODER nur weißfeldrige Läufer ODER nur schwarzfeldrige Läufer auf dem Brett (neben den Königen) => Unentschieden.
 	if totalValuePieces <= 3 or (lightSquaredBishops or darkSquaredBishops)*3 == totalValuePieces:
@@ -164,8 +79,6 @@ def checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassa
 			if (moveHistory[i-1][0][1] == "p") or moveHistory[i-1][3] or moveHistory[i-1][4]: break
 		else:
 			sys.exit("\n50 moves without moving a pawn, taking a piece or mating the king! This is a draw.\n")
-
-	return "".join(fen_0)
 
 
 def isKingInCheck(color) -> bool:
@@ -325,8 +238,9 @@ def promote(piece,targetRank,playerWhite,playerBlack) -> tuple:
 	return piece, promotion
 
 
-def move(fen_2,piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant) -> tuple:
+def move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant) -> bool:
 	hasTakenPiece = False
+	# backRank = 7 if piece.startswith("w") else 0
 	backRank = (0,7)[piece.startswith("w")]
 	
 	# kurze / lange Rochade
@@ -342,16 +256,9 @@ def move(fen_2,piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,
 		board.iloc[backRank,0] = "--"
 		board.iloc[backRank,3] = piece[0]+"r"
 	
-	else: # Jeder Nicht-Rochade-Zug. Altes Feld räumen, neues Feld mit gezogener Figur besetzen
+	else: # Jeder Nich-Rochade-Zug. Altes Feld räumen, neues Feld mit gezogener Figur besetzen
 		board.iloc[sourceRank,sourceLine] = "--"
 		board.iloc[targetRank,targetLine] = piece
-
-	# Rochade noch möglich und (König oder Turm wird bewegt): Lösche Rochaderecht
-	if "K" in fen_2 and (piece == "wk" or [sourceRank, sourceLine] == [7,7]): fen_2 = fen_2.replace("K","")
-	if "Q" in fen_2 and (piece == "wk" or [sourceRank, sourceLine] == [7,0]): fen_2 = fen_2.replace("Q","")
-	if "k" in fen_2 and (piece == "bk" or [sourceRank, sourceLine] == [0,7]): fen_2 = fen_2.replace("k","")
-	if "q" in fen_2 and (piece == "bk" or [sourceRank, sourceLine] == [0,0]): fen_2 = fen_2.replace("q","")
-	if fen_2 == "": fen_2 = "-"
 	
 	if board.iloc[targetRank,targetLine][0] == OTHERCOLOR[piece[0]]: hasTakenPiece = True # Wenn auf Zielfeld Gegner steht => Schlagzug
 
@@ -362,20 +269,15 @@ def move(fen_2,piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,
 		board.iloc[capturableEnPassant[0],capturableEnPassant[1]] = "--"
 		hasTakenPiece = True
 
+	return hasTakenPiece
+
+
+def checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine) -> list:
 	# Checke, ob wir gerade einen Bauern mit Doppelschritt bewegt haben, der als Nächstes durch enPassant vom Gegner geschlagen werden kann
 	capturableEnPassant = []
-	# muss noch geklärt werden: wenn figur am rand => ...
-	# muss noch geklärt werden: fen_3 ist der neue, der erst in der nächsten fen übergeben werden soll
-	if piece.endswith("p") and abs(targetRank-sourceRank) == 2 and board.iloc[targetRank,targetLine+1].startswith(OTHERCOLOR[piece[0]]):
+	if piece.endswith("p") and abs(targetRank-sourceRank) == 2:
 		capturableEnPassant = [targetRank,targetLine]
-		fen_3 = str(targetRank)+str(targetLine)
-	elif piece.endswith("p") and abs(targetRank-sourceRank) == 2 and board.iloc[targetRank,targetLine-1].startswith(OTHERCOLOR[piece[0]]):
-		capturableEnPassant = [targetRank,targetLine]
-		fen_3 = str(targetRank)+str(targetLine)
-	else:
-		fen_3 = "-"
-
-	return fen_2, fen_3, hasTakenPiece, capturableEnPassant
+	return capturableEnPassant
 
 
 def attackedByOpponent(dangerFields,piece) -> bool:
@@ -387,7 +289,8 @@ def attackedByOpponent(dangerFields,piece) -> bool:
 def isUnderAttack(color,myRank,myLine) -> bool:
 	piece 			= color+"p" # Bauer
 	dangerFields 	= []
-	factor 			= -1 if color == "b" else 1
+	# factor 			= -1 if color == "b" else 1
+	factor			= (1,-1)[color == "b"]
 
 	# wenn Feld links oben bzw. rechts oben innerhalb Brett => Feld speichern und später prüfen, ob da gegn. Bauer steht
 	if ((0 <= myRank-1*factor <= 7) and (0 <= myLine-1*factor <= 7)):
@@ -435,7 +338,7 @@ def getPlayerCoords(playerWhite, playerBlack, color, inputMessage):
 				return (rank, line, inp)
 
 
-def startGame(fen_2):
+def startGame():
 	moveHistory 		= []  # Zughstorie
 	capturableEnPassant = []  # Bauern, die der Ziehende enPassant schlagen kann
 	color 				= "w" # Weiß beginnt
@@ -449,8 +352,7 @@ def startGame(fen_2):
 
 	while True:
 		kingInCheck = isKingInCheck(color) # Mein König im Schach?
-		fen_0 = checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant) # Remis-/Mattstellung?
-		# fen_new = fen_0 + " " + color
+		checkDrawCheckmate(color,moveHistory,boardCopy,kingInCheck,capturableEnPassant) # Remis-/Mattstellung?
 
 		print(f"\n{('Black','White')[color == 'w']} to move:")
 		while True:
@@ -482,11 +384,9 @@ def startGame(fen_2):
 				print("To:",targetSquare)
 
 			# ggf. umwandeln / ggf. enPassant geschlagenen Bauern eliminieren / immer Figur ziehen / ggf. gegangenen Doppelschritt merken / Zughistorie
-			piece, promotion 		= promote(piece,targetRank,playerWhite,playerBlack)
-			fen_2, fen_3, hasTakenPiece, capturableEnPassant	= move(fen_2,piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant)
-			fen_new = fen_0 + " " + color + " " + fen_2 + " " + fen_3
-			print(fen_new)
-			# capturableEnPassant 	= checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine)
+			piece, promotion 	= promote(piece,targetRank,playerWhite,playerBlack)
+			hasTakenPiece 		= move(piece,shortCastlingRight,longCastlingRight,sourceRank,sourceLine,targetRank,targetLine,capturableEnPassant)
+			capturableEnPassant = checkIfWeDoubleSteppedPawn(piece,sourceRank,targetRank,targetLine)
 			moveHistory.append([piece,sourceSquare,targetSquare,hasTakenPiece,promotion])
 			break
 
@@ -495,4 +395,4 @@ def startGame(fen_2):
 		color = ("b","w")[color == "b"] # Farbe wechseln
 
 if __name__=="__main__":
-	startGame(fen_2)
+	startGame()
